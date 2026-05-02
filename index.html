@@ -391,8 +391,8 @@ footer{background:var(--bgc);border-top:1px solid var(--bdr);padding:2.5rem clam
       </div>
       <div class="authors-row">
         <div class="author-chip first">⭐ Ayah Alqassab <span style="font-size:.74rem;opacity:.7;margin-left:.2rem">First Author</span></div>
-        <div class="author-chip"><a href="https://www.linkedin.com/in/roxanemallouhy/" target="_blank">Dr. Roxane Mallouhy ↗</div>
-        <div class="author-chip"><a href="https://www.linkedin.com/in/mashael-lecturer/" target="_blank">Mashael Alqahtani ↗</a></div>
+        <div class="author-chip">Dr. Roxane Mallouhy</div>
+        <div class="author-chip"><a href="https://www.semanticscholar.org/author/Mashael-Alqahtani/67113741" target="_blank">Mashael Alqahtani ↗</a></div>
       </div>
     </div>
     <div class="stats-row">
@@ -433,9 +433,9 @@ footer{background:var(--bgc);border-top:1px solid var(--bdr);padding:2.5rem clam
     <div class="ft-logo">NeuraMind</div>
     <div class="ft-authors">
       <span class="ft-author first">Ayah Alqassab (First Author)</span>
-      <a class="ft-author" href="https://www.linkedin.com/in/roxanemallouhy/" target="_blank">Dr. Roxane Mallouhy ↗</a>
+      <span class="ft-author">·</span><span class="ft-author">Dr. Roxane Mallouhy</span>
       <span class="ft-author">·</span>
-      <a class="ft-author" href="https://www.linkedin.com/in/mashael-lecturer/" target="_blank">Mashael Alqahtani ↗</a>
+      <a class="ft-author" href="https://www.semanticscholar.org/author/Mashael-Alqahtani/67113741" target="_blank">Mashael Alqahtani ↗</a>
     </div>
     <div class="ft-links">
       <a onclick="showPage('home')">Home</a><a onclick="startAssessment()">Screening</a>
@@ -653,6 +653,17 @@ footer{background:var(--bgc);border-top:1px solid var(--bdr);padding:2.5rem clam
         <button class="btn-s" onclick="showPage('home')" style="font-size:.84rem;padding:9px 18px">← Exit</button>
       </div>
     </div>
+    <div id="admin-setup" style="background:rgba(232,131,74,.12);border:1px solid rgba(232,131,74,.3);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem;display:none">
+      <h3 style="color:var(--ac);margin-bottom:.75rem">⚙️ Setup required — connect to cloud storage</h3>
+      <p style="font-size:.88rem;color:var(--sub);line-height:1.6;margin-bottom:1rem">Currently running in <strong>local-only mode</strong> — data is saved in the browser of the person who answers. To collect data from all users in one place, you need to connect a free JSONBin.io account:</p>
+      <ol style="font-size:.86rem;color:var(--sub);line-height:1.9;padding-left:1.2rem;margin-bottom:1rem">
+        <li>Go to <a href="https://jsonbin.io" target="_blank" style="color:var(--pr)">jsonbin.io</a> → sign up free</li>
+        <li>Click <strong>API Keys</strong> → create a Master Key → copy it</li>
+        <li>Click <strong>Bins</strong> → Create Bin → paste <code style="background:var(--bg2);padding:2px 6px;border-radius:4px">[]</code> as content → save → copy the Bin ID</li>
+        <li>Open this HTML file in a text editor → find <code style="background:var(--bg2);padding:2px 6px;border-radius:4px">JSONBIN_KEY</code> and <code style="background:var(--bg2);padding:2px 6px;border-radius:4px">JSONBIN_BIN</code> → paste your values → save the file</li>
+      </ol>
+      <p style="font-size:.82rem;color:var(--muted)">Once configured, every participant who consents will have their anonymous results saved to your JSONBin account — visible here in real time from any device.</p>
+    </div>
     <div id="admin-content"></div>
   </div>
   <footer>
@@ -662,9 +673,15 @@ footer{background:var(--bgc);border-top:1px solid var(--bdr);padding:2.5rem clam
 </div>
 
 <script>
-// ── CONSTANTS ─────────────────────────────────────────────────
 const ADMIN_PW  = 'neuramind2025';
-const STORE_KEY = 'nm_results_v2';
+// ── CLOUD STORAGE CONFIG (JSONBin.io — free) ──────────────────
+// Sign up free at jsonbin.io → API Keys → Create Key
+// Then create a Bin with [] as initial content
+// Paste your Master Key and Bin ID below:
+const JSONBIN_KEY = '$2a$10$Bsbf7c74AEaLz.dIaWyLy.ukrBih3zMB53e3C2VZjqLyJgIKRPnLm'; // starts with $2b$
+const JSONBIN_BIN = '69f57d55856a682189985bac';     // looks like 664abc...
+const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN}`;
+const CONFIGURED  = JSONBIN_KEY !== 'YOUR_MASTER_KEY_HERE' && JSONBIN_BIN !== 'YOUR_BIN_ID_HERE';
 const SECS = ['Introduction','Attention & Focus','Restlessness','Emotional Regulation','Daily Life Impact'];
 const FREQ = ['Never','Rarely','Sometimes','Often','Very Often'];
 const LAST = ['Not at all','A little','Moderately','Significantly','Profoundly'];
@@ -837,6 +854,52 @@ function runModel(s1,s2,s3,s4){
   return {p1,p2,ens,adhd:ens>=0.53?1:0};
 }
 
+// ── CLOUD DATA HELPERS ───────────────────────────────────────
+async function saveToCloud(entry){
+  if(!CONFIGURED){
+    // Fallback: save to localStorage if not configured
+    const local=JSON.parse(localStorage.getItem('nm_local_backup')||'[]');
+    local.push(entry); localStorage.setItem('nm_local_backup',JSON.stringify(local));
+    return;
+  }
+  try {
+    // Read current data
+    const getRes=await fetch(JSONBIN_URL+'/latest',{
+      headers:{'X-Master-Key':JSONBIN_KEY}
+    });
+    const getJson=await getRes.json();
+    const current=Array.isArray(getJson.record)?getJson.record:[];
+    current.push(entry);
+    // Write updated data
+    await fetch(JSONBIN_URL,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json','X-Master-Key':JSONBIN_KEY},
+      body:JSON.stringify(current)
+    });
+  } catch(e){
+    // On error fallback to localStorage
+    const local=JSON.parse(localStorage.getItem('nm_local_backup')||'[]');
+    local.push(entry); localStorage.setItem('nm_local_backup',JSON.stringify(local));
+    console.warn('Cloud save failed, saved locally:',e);
+  }
+}
+
+async function loadFromCloud(){
+  if(!CONFIGURED){
+    return JSON.parse(localStorage.getItem('nm_local_backup')||'[]');
+  }
+  try {
+    const res=await fetch(JSONBIN_URL+'/latest',{
+      headers:{'X-Master-Key':JSONBIN_KEY}
+    });
+    const json=await res.json();
+    return Array.isArray(json.record)?json.record:[];
+  } catch(e){
+    console.warn('Cloud load failed:',e);
+    return JSON.parse(localStorage.getItem('nm_local_backup')||'[]');
+  }
+}
+
 // ── SUBMIT ────────────────────────────────────────────────────
 function submitAssessment(){
   const qs=['q16','q17','q18','q19','q20'];
@@ -849,15 +912,14 @@ function submitAssessment(){
   const m=runModel(s1,s2,s3,s4);
   lastScores={s1,s2,s3,s4,total:s1+s2+s3+s4,...m};
   if(consentData.consented){
-    const data=JSON.parse(localStorage.getItem(STORE_KEY)||'[]');
     const pct=Math.round((lastScores.total/80)*100);
     const rKey=pct<30?'Low':pct<50?'Moderate':pct<68?'Elevated':'High';
-    data.push({id:Date.now(),ts:new Date().toISOString(),s1,s2,s3,s4,
+    const entry={id:Date.now(),ts:new Date().toISOString(),s1,s2,s3,s4,
       total:lastScores.total,risk:rKey,adhd_positive:m.adhd,
       ensemble_score:parseFloat(m.ens.toFixed(3)),
       age:consentData.age||'',gender:consentData.gender||'',
-      region:consentData.region||'',diagnosed:consentData.diagnosed||''});
-    localStorage.setItem(STORE_KEY,JSON.stringify(data));
+      region:consentData.region||'',diagnosed:consentData.diagnosed||''};
+    saveToCloud(entry);
   }
   showPage('results');
 }
@@ -1065,8 +1127,9 @@ function downloadPDF(){
 
 // ── COMMUNITY ─────────────────────────────────────────────────
 function renderCommunity(){
-  const data=JSON.parse(localStorage.getItem(STORE_KEY)||'[]');
   const cont=document.getElementById('comm-content');
+  cont.innerHTML='<div class="no-data"><h3>Loading results...</h3></div>';
+  loadFromCloud().then(data=>{
   if(!data.length){cont.innerHTML=`<div class="no-data"><h3>No results shared yet</h3><p>Be the first — take the screening and opt in at the start.</p><br/><button class="btn-p" onclick="startAssessment()">Take the Screening</button></div>`;return;}
   const n=data.length, avgTotal=(data.reduce((a,r)=>a+r.total,0)/n), avgPct=Math.round((avgTotal/80)*100);
   const risks={Low:0,Moderate:0,Elevated:0,High:0};
@@ -1094,12 +1157,16 @@ function renderCommunity(){
           <div class="dist-bg"><div class="dist-fill" style="width:${p2}%;background:var(--pr)">${p2>12?`<span>${p2}%</span>`:''}</div></div></div>`;
       }).join('')}
     </div>`;
+  }); // end loadFromCloud
 }
 
 // ── ADMIN ─────────────────────────────────────────────────────
 function renderAdmin(){
-  const data=JSON.parse(localStorage.getItem(STORE_KEY)||'[]');
+  const setup=document.getElementById('admin-setup');
+  if(setup) setup.style.display=CONFIGURED?'none':'block';
   const cont=document.getElementById('admin-content');
+  cont.innerHTML='<div class="empty-state">Loading data from cloud...</div>';
+  loadFromCloud().then(data=>{
   if(!data.length){cont.innerHTML='<div class="empty-state">No results collected yet. Responses appear here once participants consent to share.</div>';return;}
   const n=data.length, avg=(data.reduce((a,r)=>a+r.total,0)/n).toFixed(1);
   const positive=data.filter(r=>r.adhd_positive).length;
@@ -1144,10 +1211,11 @@ function renderAdmin(){
       datasets:[{label:'Avg score',data:avgs,backgroundColor:'rgba(18,168,126,.7)',borderColor:'#12A87E',borderWidth:1.5,borderRadius:6}]},
     options:{scales:{y:{max:20,ticks:{color:'var(--sub)'},grid:{color:'var(--bdrlt)'}},x:{ticks:{color:'var(--sub)'}}},plugins:{legend:{display:false}}}
   });
+  }); // end loadFromCloud
 }
 
 function exportCSV(){
-  const data=JSON.parse(localStorage.getItem(STORE_KEY)||'[]');
+  loadFromCloud().then(data=>{
   if(!data.length){alert('No data to export.');return;}
   const hdrs=['id','date','total','pct','risk','adhd_positive','ensemble_score','s1','s2','s3','s4','age','gender','region','diagnosed'];
   const rows=data.map(r=>[r.id,new Date(r.ts).toISOString().slice(0,10),r.total,Math.round((r.total/80)*100),r.risk,r.adhd_positive,r.ensemble_score,r.s1,r.s2,r.s3,r.s4,r.age||'',r.gender||'',r.region||'',r.diagnosed||'']);
@@ -1156,9 +1224,17 @@ function exportCSV(){
   a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
   a.download=`NeuraMind_Data_${new Date().toISOString().slice(0,10)}.csv`;
   a.click();
+  }); // end loadFromCloud
 }
+
 function clearAllData(){
-  if(confirm('Permanently delete all collected data? This cannot be undone.')){localStorage.removeItem(STORE_KEY);renderAdmin();}
+  if(!confirm('Permanently delete ALL collected data from the cloud? This cannot be undone.')) return;
+  if(!CONFIGURED){localStorage.removeItem('nm_local_backup');renderAdmin();return;}
+  fetch(JSONBIN_URL,{method:'PUT',
+    headers:{'Content-Type':'application/json','X-Master-Key':JSONBIN_KEY},
+    body:'[]'})
+  .then(()=>renderAdmin())
+  .catch(e=>{alert('Error clearing data: '+e.message);});
 }
 
 // ── RESET ─────────────────────────────────────────────────────
@@ -1174,5 +1250,3 @@ updateProg();
 </script>
 </body>
 </html>
-
-
