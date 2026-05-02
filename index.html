@@ -1038,12 +1038,12 @@ function downloadPDF(){
   }); y+=3;
 
   secH('ABOUT THIS RESEARCH');
-  para('NeuraMind is based on the WiDS Datathon 2025 research project by Ayah Alqassab, Dr. Roxane Mallouhy, and Mashael Alqahtani at Al Yamamah University. The model achieved 80.8% cross-validated accuracy and 94.1% recall on 1,213 real cases (ADHD+: 831, ADHD-: 382). Metrics from printed confusion matrix: TP=782, TN=193, FP=189, FN=49. ADHD AUC=0.82, Sex AUC=0.81 (from ROC curve).');
+  para('NeuraMind is based on the WiDS Datathon 2025 research project by Ayah Alqassab, Dr. Roxane Mallouhy, and Mashael Alqahtani at Al Yamamah University. The model achieved 80.8% cross-validated accuracy and 94.1% recall on 1,213 real cases (ADHD positive: 831, ADHD negative: 382). Metrics from printed confusion matrix: TP=782, TN=193, FP=189, FN=49. ADHD AUC=0.82, Sex AUC=0.81 (from ROC curve).');
   y+=3;
 
   if(y>244){doc.addPage();y=20;}
-  doc.setFillColor(254,240,228); doc.rect(14,y,182,25,'F');
-doc.setDrawColor(232,131,74); doc.setLineWidth(0.5); doc.rect(14,y,182,25,'S');
+  doc.setFillColor(254,240,228); doc.rect(14,y,182,30,'F');
+  doc.setDrawColor(232,131,74); doc.setLineWidth(0.5); doc.rect(14,y,182,30,'S');
   doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(180,80,20);
   doc.text('Clinical Disclaimer',16,y+7);
   doc.setFont('helvetica','normal'); doc.setTextColor(100,70,30);
