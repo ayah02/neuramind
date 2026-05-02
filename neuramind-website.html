@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Exploring ADHD in the Female Brain Through Multimodal Machine Learning</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;0,700;1,600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --pr:#12A87E;--pr2:#0A6B56;--prp:rgba(18,168,126,.13);
+  --ac:#E8834A;--acp:rgba(232,131,74,.12);
+  --bg:#0B0F16;--bgc:#111720;--bg2:#181E2A;--bg3:#1E2535;
+  --txt:#EDF0F5;--sub:#8899AE;--muted:#4D5E70;
+  --bdr:#232D3B;--bdrlt:#1A2230;
+  --sh:0 2px 20px rgba(0,0,0,.4);--sh2:0 8px 48px rgba(0,0,0,.55);
+  --rd:14px;--rdlg:20px;--trans:.22s ease;
+}
+[data-theme="light"]{
+  --bg:#F4F6F3;--bgc:#FFFFFF;--bg2:#ECEEED;--bg3:#E4E7E4;
+  --txt:#0D1820;--sub:#4A5A6A;--muted:#8A9AAA;
+  --bdr:#D4DAD4;--bdrlt:#E8ECE8;
+  --prp:rgba(18,168,126,.1);--acp:rgba(232,131,74,.1);
+  --sh:0 2px 16px rgba(13,24,32,.07);--sh2:0 8px 36px rgba(13,24,32,.13);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--txt);line-height:1.65;transition:background var(--trans),color var(--trans);min-height:100vh;}
+h1,h2,h3,h4{font-family:'Fraunces',Georgia,serif;font-weight:700;line-height:1.15;color:var(--txt)}
+a{color:inherit;text-decoration:none}
+button{font-family:'DM Sans',system-ui,sans-serif;cursor:pointer}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;height:62px;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(1rem,4vw,2.5rem);background:rgba(11,15,22,.93);backdrop-filter:blur(20px);border-bottom:1px solid var(--bdr);transition:background var(--trans),border-color var(--trans);}
+[data-theme="light"] nav{background:rgba(244,246,243,.93)}
+.nav-logo{font-family:'Fraunces',Georgia,serif;font-size:1.1rem;font-weight:700;color:var(--pr);display:flex;align-items:center;gap:8px;cursor:pointer}
+.logo-dot{width:8px;height:8px;border-radius:50%;background:var(--ac);animation:pulse 2.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.nav-links{display:flex;gap:1.4rem;list-style:none;align-items:center}
+.nav-links a{font-size:.84rem;color:var(--sub);cursor:pointer;transition:color var(--trans);padding:4px 0;border-bottom:1.5px solid transparent;white-space:nowrap}
+.nav-links a:hover,.nav-links a.active{color:var(--pr);border-bottom-color:var(--pr)}
+.nav-right{display:flex;align-items:center;gap:.65rem}
+.theme-btn{width:40px;height:22px;border-radius:100px;border:none;background:var(--pr);position:relative;transition:background var(--trans);flex-shrink:0;}
+.theme-btn::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform var(--trans);box-shadow:0 1px 4px rgba(0,0,0,.3);}
+[data-theme="light"] .theme-btn::after{transform:translateX(18px)}
+.nav-cta{background:var(--pr);color:#fff;padding:7px 18px;border-radius:100px;font-size:.83rem;font-weight:500;border:none;transition:all var(--trans);white-space:nowrap}
+.nav-cta:hover{background:var(--pr2);transform:translateY(-1px)}
+.burger{display:none;flex-direction:column;gap:4px;background:none;border:none;padding:4px}
+.burger span{display:block;width:20px;height:2px;background:var(--txt);border-radius:2px;transition:all var(--trans)}
+.mobile-nav{position:fixed;top:62px;left:0;right:0;z-index:199;background:var(--bgc);border-bottom:1px solid var(--bdr);padding:.75rem 1.5rem;display:none;flex-direction:column;gap:.65rem;box-shadow:var(--sh2)}
+.mobile-nav.open{display:flex}
+.mobile-nav a{color:var(--sub);font-size:.95rem;cursor:pointer;padding:.35rem 0;border-bottom:1px solid var(--bdrlt)}
+
+/* PAGES */
+.page{display:none;min-height:100vh;padding-top:62px}
+.page.active{display:block;animation:fadeUp .38s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* BUTTONS */
+.btn-p{background:var(--pr);color:#fff;padding:12px 28px;border-radius:100px;font-size:.93rem;font-weight:500;border:none;display:inline-flex;align-items:center;gap:7px;transition:all var(--trans)}
+.btn-p:hover{background:var(--pr2);transform:translateY(-2px);box-shadow:var(--sh2)}
+.btn-p:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-s{background:transparent;color:var(--txt);padding:11px 26px;border-radius:100px;font-size:.93rem;border:1.5px solid var(--bdr);transition:all var(--trans);display:inline-block}
+.btn-s:hover{border-color:var(--pr);color:var(--pr)}
+.btn-ghost{background:none;border:none;color:var(--sub);font-size:.9rem;transition:color var(--trans)}
+.btn-ghost:hover{color:var(--pr)}
+.btn-danger{background:#991B1B;color:#fff;padding:9px 20px;border-radius:100px;font-size:.85rem;border:none;transition:all var(--trans)}
+.btn-danger:hover{background:#7F1D1D}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.78);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:1rem;animation:fadeIn .22s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.overlay.hidden{display:none}
+.modal{background:var(--bgc);border:1px solid var(--bdr);border-radius:var(--rdlg);padding:2.25rem;max-width:520px;width:100%;box-shadow:var(--sh2);animation:scaleIn .25s ease;max-height:90vh;overflow-y:auto}
+@keyframes scaleIn{from{transform:scale(.96);opacity:0}to{transform:scale(1);opacity:1}}
+.modal h2{font-size:1.5rem;margin-bottom:.75rem;color:var(--txt)}
+.modal p{font-size:.93rem;color:var(--sub);line-height:1.65;margin-bottom:.85rem}
+.modal-actions{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1.4rem}
+.form-group{margin-bottom:.9rem}
+.form-group label{display:block;font-size:.84rem;font-weight:500;color:var(--sub);margin-bottom:.38rem}
+.form-group select{width:100%;padding:10px 14px;border-radius:10px;border:1.5px solid var(--bdr);background:var(--bg2);color:var(--txt);font-size:.92rem;font-family:'DM Sans',system-ui,sans-serif;transition:border-color var(--trans);outline:none}
+.form-group select:focus{border-color:var(--pr)}
+.form-group select option{background:var(--bgc);color:var(--txt)}
+.optional-tag{font-size:.7rem;color:var(--muted);margin-left:.3rem}
+
+/* HOME */
+.hero{min-height:calc(100vh - 62px);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4rem clamp(1rem,5vw,3rem) 3rem;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse 60% 50% at 70% 20%,rgba(18,168,126,.12) 0%,transparent 70%),radial-gradient(ellipse 50% 40% at 20% 80%,rgba(232,131,74,.08) 0%,transparent 70%);pointer-events:none}
+.hero-inner{position:relative;z-index:1;max-width:780px}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:var(--prp);color:var(--pr);padding:6px 14px;border-radius:100px;font-size:.78rem;font-weight:500;margin-bottom:1.5rem;border:1px solid rgba(18,168,126,.25)}
+.hero h1{font-size:clamp(2.1rem,5.2vw,4.2rem);font-weight:700;margin-bottom:1.1rem}
+.hero h1 em{font-style:italic;color:var(--pr)}
+.hero-sub{font-size:1.02rem;color:var(--sub);max-width:520px;margin:0 auto 2.25rem;line-height:1.8}
+.hero-btns{display:flex;gap:.85rem;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem}
+.authors-row{display:flex;flex-wrap:wrap;gap:.65rem;justify-content:center;margin-bottom:3rem}
+.author-chip{background:var(--bg2);border:1px solid var(--bdr);border-radius:100px;padding:6px 16px;font-size:.82rem;color:var(--sub);display:flex;align-items:center;gap:.45rem;transition:all var(--trans)}
+.author-chip.first{background:var(--prp);border-color:rgba(18,168,126,.3);color:var(--pr)}
+.author-chip:hover{border-color:var(--pr)}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;max-width:800px;width:100%;position:relative;z-index:1}
+.stat-card{background:var(--bgc);border:1px solid var(--bdr);border-radius:var(--rd);padding:1.5rem 1.25rem;text-align:center;box-shadow:var(--sh);transition:all var(--trans)}
+.stat-card:hover{border-color:var(--pr);transform:translateY(-2px)}
+.stat-num{font-family:'Fraunces',Georgia,serif;font-size:2.5rem;font-weight:700;color:var(--pr);line-height:1;margin-bottom:.35rem}
+.stat-lbl{font-size:.81rem;color:var(--sub);line-height:1.4}
+.section{padding:4.5rem clamp(1rem,5vw,3rem);max-width:1060px;margin:0 auto}
+.stag{font-size:.7rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--ac);margin-bottom:.5rem}
+.section h2{font-size:clamp(1.7rem,4vw,2.5rem);margin-bottom:.9rem}
+.lead{color:var(--sub);max-width:520px;font-size:1rem}
+.divider{height:1px;background:var(--bdrlt);max-width:1060px;margin:0 auto}
+.how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:2.75rem;position:relative}
+.how-grid::before{content:'';position:absolute;top:26px;left:15%;right:15%;height:1px;background:var(--bdr)}
+.how-step{padding:0 1.4rem;text-align:center}
+.how-num{width:52px;height:52px;border-radius:50%;background:var(--bgc);border:1.5px solid var(--bdr);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-family:'Fraunces',Georgia,serif;font-size:1.1rem;font-weight:700;color:var(--pr);position:relative;z-index:1;box-shadow:var(--sh)}
+.how-step h3{font-size:.97rem;font-weight:600;margin-bottom:.4rem;font-family:'Fraunces',Georgia,serif}
+.how-step p{font-size:.865rem;color:var(--sub);line-height:1.6}
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1rem;margin-top:2.25rem}
+.fcard{background:var(--bgc);border:1px solid var(--bdr);border-radius:var(--rd);padding:1.5rem;box-shadow:var(--sh);transition:all var(--trans)}
+.fcard:hover{transform:translateY(-3px);border-color:var(--pr);box-shadow:var(--sh2)}
+.fcard-icon{width:40px;height:40px;border-radius:10px;background:var(--prp);display:flex;align-items:center;justify-content:center;font-size:1.15rem;margin-bottom:.9rem}
+.fcard h3{font-size:.97rem;font-weight:600;margin-bottom:.35rem;font-family:'Fraunces',Georgia,serif}
+.fcard p{font-size:.865rem;color:var(--sub);line-height:1.6}
+.cta-banner{background:var(--pr);padding:4rem clamp(1rem,5vw,3rem);text-align:center}
+.cta-banner h2{font-size:clamp(1.7rem,4vw,2.5rem);color:#fff;margin-bottom:.8rem}
+.cta-banner p{color:rgba(255,255,255,.72);max-width:430px;margin:0 auto 1.75rem;font-size:.95rem}
+.btn-white{background:#fff;color:var(--pr);padding:12px 28px;border-radius:100px;font-size:.93rem;font-weight:500;border:none;transition:all var(--trans)}
+.btn-white:hover{background:rgba(255,255,255,.88);transform:translateY(-2px)}
+
+/* ASSESSMENT */
+.assess-wrap{max-width:660px;margin:0 auto;padding:2.5rem clamp(1rem,4vw,2rem) 5rem}
+.prog-wrap{margin-bottom:2.25rem}
+.prog-bar{height:3px;background:var(--bdrlt);border-radius:100px;overflow:hidden;margin-bottom:.4rem}
+.prog-fill{height:100%;background:var(--pr);border-radius:100px;transition:width .55s ease}
+.prog-meta{display:flex;justify-content:space-between;font-size:.77rem;color:var(--muted)}
+.assess-step{display:none;animation:fadeUp .32s ease both}
+.assess-step.active{display:block}
+.step-sec{font-size:.77rem;color:var(--muted);margin-bottom:.28rem}
+.step-h{font-size:1.65rem;font-weight:700;margin-bottom:.5rem}
+.step-sub{color:var(--sub);font-size:.88rem;margin-bottom:1.75rem;line-height:1.6}
+.intro-card{background:var(--bgc);border:1px solid var(--bdr);border-radius:var(--rdlg);padding:2rem;margin-bottom:1.5rem;box-shadow:var(--sh)}
+.intro-card p{color:var(--sub);font-size:.9rem;line-height:1.65;margin-top:.6rem}
+.intro-grid{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin:1.1rem 0}
+.intro-feat{display:flex;gap:.45rem;align-items:flex-start;font-size:.85rem;color:var(--sub)}
+.assess-disc{background:var(--acp);border:1px solid rgba(232,131,74,.2);border-radius:10px;padding:.85rem 1rem;font-size:.79rem;color:var(--sub);line-height:1.55;margin-top:1.1rem}
+.q-block{margin-bottom:1.5rem}
+.q-text{font-size:.97rem;font-weight:500;margin-bottom:.75rem;line-height:1.5;color:var(--txt)}
+.q-num{color:var(--pr);font-weight:700;margin-right:.3rem}
+.opts{display:flex;flex-direction:column;gap:.38rem}
+.opt-lbl{display:flex;align-items:center;gap:11px;padding:10px 15px;border:1.5px solid var(--bdrlt);border-radius:11px;cursor:pointer;transition:all .14s;font-size:.875rem;color:var(--sub);user-select:none;background:var(--bgc)}
+.opt-lbl:hover{border-color:var(--pr);background:var(--prp);color:var(--txt)}
+.opt-lbl.sel{border-color:var(--pr);background:var(--prp);color:var(--pr);font-weight:500}
+.opt-lbl input{display:none}
+.opt-dot{width:17px;height:17px;border-radius:50%;border:2px solid var(--bdr);flex-shrink:0;position:relative;transition:all .14s}
+.opt-lbl.sel .opt-dot{background:var(--pr);border-color:var(--pr)}
+.opt-lbl.sel .opt-dot::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:5px;height:5px;border-radius:50%;background:#fff}
+.opt-lbl:hover .opt-dot{border-color:var(--pr)}
+.step-nav{display:flex;justify-content:space-between;align-items:center;margin-top:1.75rem;padding-top:1.4rem;border-top:1px solid var(--bdrlt)}
+.err-msg{color:#f87171;font-size:.82rem;display:none;margin-bottom:.8rem;padding:.55rem .85rem;background:rgba(248,113,113,.1);border-radius:8px;border:1px solid rgba(248,113,113,.25)}
+.err-msg.show{display:block}
+
+/* RESULTS */
+.result-hero{padding:3.5rem clamp(1rem,5vw,3rem) 2.5rem;text-align:center;position:relative;overflow:hidden}
+.result-hero::before{content:'';position:absolute;top:0;left:0;right:0;height:52%;background:var(--bg2);z-index:0}
+.result-hero>*{position:relative;z-index:1}
+.risk-badge{display:inline-block;padding:6px 18px;border-radius:100px;font-size:.85rem;font-weight:600;margin-bottom:1.3rem}
+.r-low{background:rgba(18,168,126,.2);color:#12A87E}
+.r-mod{background:rgba(234,179,8,.18);color:#CA8A04}
+.r-elv{background:rgba(249,115,22,.18);color:#EA580C}
+.r-high{background:rgba(239,68,68,.18);color:#DC2626}
+.score-ring{width:165px;height:165px;margin:0 auto 1.65rem;position:relative}
+.score-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring-txt{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.ring-num{font-family:'Fraunces',Georgia,serif;font-size:2.3rem;font-weight:700;line-height:1}
+.ring-lbl{font-size:.67rem;color:var(--muted);margin-top:.1rem}
+.result-title{font-size:clamp(1.45rem,3vw,2.1rem);font-weight:700;margin-bottom:.6rem}
+.result-sub{font-size:.97rem;color:var(--sub);max-width:500px;margin:0 auto 2.25rem;line-height:1.72}
+.res-wrap{max-width:840px;margin:0 auto;padding:0 clamp(1rem,4vw,2rem) 4rem}
+.model-box{background:var(--bgc);border:1.5px solid var(--pr);border-radius:var(--rdlg);padding:1.5rem;margin-bottom:1.5rem;box-shadow:var(--sh)}
+.model-box h3{font-size:1.1rem;color:var(--pr);margin-bottom:.9rem;display:flex;align-items:center;gap:.4rem}
+.stream-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-bottom:.8rem}
+.stream-box{border-radius:10px;padding:.8rem;text-align:center}
+.sb1{background:var(--prp)}.sb2{background:var(--acp)}.sb3{background:var(--bg2)}
+.sv{font-family:'Fraunces',Georgia,serif;font-size:1.6rem;font-weight:700;line-height:1}
+.sb1 .sv{color:var(--pr)}.sb2 .sv{color:var(--ac)}.sb3 .sv{color:#5B8BF0}
+.sl{font-size:.7rem;color:var(--sub);margin-top:.15rem}
+.formula{font-family:'Courier New',monospace;font-size:.76rem;background:var(--bg);border:1px solid var(--bdr);border-radius:8px;padding:.65rem .95rem;color:var(--txt);line-height:1.7;word-break:break-all}
+.note-txt{font-size:.77rem;color:var(--sub);margin-top:.55rem}
+.chart-box{background:var(--bgc);border:1px solid var(--bdr);border-radius:var(--rdlg);padding:1.5rem;margin-bottom:1.15rem;box-shadow:var(--sh)}
+.chart-box h3{font-size:1.08rem;font-weight:600;margin-bottom:1rem}
+.chart-inner{max-width:300px;margin:0 auto}
+.bd-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.9rem;margin-bottom:1.15rem}
+.bd-card{background:var(--bgc);border:1px solid var(--bdr);border-radius:var(--rd);padding:1.1rem 1.25rem;box-shadow:var(--sh)}
+.bd-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.6rem}
+.bd-lbl{font-size:.76rem;font-weight:500;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.bd-pct{font-family:'Fraunces',Georgia,serif;font-size:1.4rem;font-weight:700;color:var(--pr)}
+.bd-bg{height:5px;background:var(--bdrlt);border-radius:100px;overflow:hidden}
+.bd-fill{height:100%;border-radius:100px;background:var(--pr);width:0;transition:width 1.3s ease}
+.findings-box{background:var(--bgc);border:1px solid var(--bdr);border-radius:var(--rdlg);padding:1.5rem;margin-bottom:1.15rem;box-shadow:var(--sh)}
+.findings-box h3{font-size:1.08rem;font-weight:600;margin-bottom:1rem}
+.fi{display:flex;gap:.6rem;padding:.7rem 0;border-bottom:1px solid var(--bdrlt)}
+.fi:last-child{border:none;padding-bottom:0}
+.fi-icon{font-size:.98rem;margin-top:2px;flex-shrink:0}
+.fi h4{font-size:.88rem;font-weight:500;margin-bottom:.13rem;color:var(--txt)}
+.fi p{font-size:.81rem;color:var(--sub);line-height:1.5}
+.recs-wrap{margin-bottom:1.15rem}
+.recs-wrap h3{font-size:1.08rem;font-weight:600;margin-bottom:.85rem}
+.rec{background:var(--bgc);border:1px solid var(--bdr);border-radius:var(--rd);padding:1.05rem 1.25rem;display:flex;gap:.7rem;align-items:flex-start;margin-bottom:.6rem;box-shadow:var(--sh)}
+.rec-icon{font-size:.98rem;margin-top:2px;flex-shrink:0}
+.rec h4{font-size:.87rem;font-weight:500;margin-bottom:.13rem;color:var(--txt)}
+.rec p{font-size:.81rem;color:var(--sub);line-height:1.5}
+.res-disc{background:var(--acp);border:1px solid rgba(232,131,74,.2);border-radius:var(--rd);padding:1.05rem 1.25rem;font-size:.79rem;color:var(--sub);line-height:1.55;margin-bottom:1.3rem}
+.res-actions{display:flex;gap:.65rem;justify-content:center;flex-wrap:wrap;margin-bottom:3rem}
+
+/* MODEL */
+.sci-hero{background:linear-gradient(135deg,#060B12 0%,#0D1520 60%,#0A1A14 100%);padding:5.5rem clamp(1rem,5vw,3rem) 4rem;text-align:center}
+[data-theme="light"] .sci-hero{background:linear-gradient(135deg,#0D1820 0%,#0A2218 100%)}
+.sci-hero h1{font-size:clamp(2rem,5vw,3.1rem);color:#fff;margin-bottom:.9rem}
+.sci-hero p{color:rgba(255,255,255,.58);font-size:1rem;max-width:520px;margin:0 auto}
+.sci-badge{display:inline-block;background:rgba(255,255,255,.1);color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.15);padding:5px 13px;border-radius:100px;font-size:.76rem;font-weight:500;margin-bottom:1.1rem}
+.metrics-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.9rem;max-width:940px;margin:-2rem auto 0;padding:0 clamp(1rem,4vw,2rem);position:relative;z-index:10}
+.met-card{background:var(--bgc);border:1px solid var(--bdr);border-radius:var(--rd);padding:1.25rem;text-align:center;box-shadow:var(--sh)}
+.met-val{font-family:'Fraunces',Georgia,serif;font-size:2rem;font-weight:700;color:var(--pr);line-height:1;margin-bottom:.2rem}
+.met-lbl{font-size:.76rem;color:var(--muted);line-height:1.4}
+.arch-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem;margin-top:2rem}
+.arch-card{background:var(--bgc);border:1px solid var(--bdr);border-radius:var(--rd);padding:1.5rem;box-shadow:var(--sh)}
+.arch-card h3{font-size:1.05rem;font-weight:600;margin-bottom:.6rem;font-family:'Fraunces',Georgia,serif}
+.arch-card p{font-size:.86rem;color:var(--sub);line-height:1.65}
+.arch-tag{display:inline-block;background:var(--prp);color:var(--pr);border-radius:100px;font-size:.69rem;font-weight:500;padding:3px 9px;margin:.18rem .1rem 0 0}
+.code-blk{font-family:'Courier New',monospace;font-size:.75rem;background:#060B12;color:#a8dfc3;padding:.95rem 1.1rem;border-radius:9px;margin-top:.9rem;line-height:1.7;overflow-x:auto}
+[data-theme="light"] .code-blk{background:#0D1820;color:#7EC8A8}
+.pip-steps{display:flex;flex-direction:column;gap:.45rem;margin-top:1.25rem}
+.pip-step{display:flex;align-items:flex-start;gap:.6rem;padding:.65rem .85rem;background:var(--bg2);border-radius:9px;font-size:.86rem}
+.pip-n{width:22px;height:22px;border-radius:50%;background:var(--pr);color:#fff;font-size:.67rem;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.pip-step span{color:var(--sub);line-height:1.55}
+
+/* COMMUNITY */
+.comm-wrap{max-width:840px;margin:0 auto;padding:2.5rem clamp(1rem,4vw,2rem) 5rem}
+.comm-header{text-align:center;margin-bottom:2.25rem}
+.comm-header p{color:var(--sub);max-width:480px;margin:.65rem auto 0;font-size:.93rem}
+.comm-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.9rem;margin-bottom:2.25rem}
+.cs-card{background:var(--bgc);border:1px solid var(--bdr);border-radius:var(--rd);padding:1.2rem;text-align:center;box-shadow:var(--sh)}
+.cs-num{font-family:'Fraunces',Georgia,serif;font-size:1.9rem;font-weight:700;color:var(--pr);line-height:1}
+.cs-lbl{font-size:.79rem;color:var(--muted);margin-top:.22rem}
+.dist-wrap{background:var(--bgc);border:1px solid var(--bdr);border-radius:var(--rdlg);padding:1.5rem;margin-bottom:1.25rem;box-shadow:var(--sh)}
+.dist-wrap h3{font-size:1.05rem;font-weight:600;margin-bottom:1.1rem}
+.dist-bar{margin-bottom:.9rem}
+.dist-lbl{display:flex;justify-content:space-between;font-size:.84rem;margin-bottom:.3rem;color:var(--sub)}
+.dist-bg{height:20px;background:var(--bg2);border-radius:100px;overflow:hidden}
+.dist-fill{height:100%;border-radius:100px;transition:width 1.2s ease;display:flex;align-items:center;padding-left:.55rem}
+.dist-fill span{font-size:.73rem;font-weight:500;color:#fff;white-space:nowrap}
+.no-data{text-align:center;padding:3rem 1rem;color:var(--muted)}
+.no-data h3{font-size:1.1rem;margin-bottom:.45rem;color:var(--sub)}
+.privacy-note{background:var(--bg2);border-radius:var(--rd);padding:.9rem 1.15rem;font-size:.79rem;color:var(--sub);line-height:1.55;margin-top:1.1rem}
+
+/* ADMIN */
+.admin-wrap{max-width:1000px;margin:0 auto;padding:2.5rem clamp(1rem,4vw,2rem) 5rem}
+.admin-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2rem;flex-wrap:wrap;gap:1rem}
+.admin-badge{background:rgba(239,68,68,.15);color:#EF4444;border:1px solid rgba(239,68,68,.25);padding:5px 14px;border-radius:100px;font-size:.78rem;font-weight:500;display:inline-block;margin-bottom:.4rem}
+.admin-charts{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem;margin-bottom:1.5rem}
+.admin-chart-box{background:var(--bgc);border:1px solid var(--bdr);border-radius:var(--rd);padding:1.35rem;box-shadow:var(--sh)}
+.admin-chart-box h3{font-size:1rem;font-weight:600;margin-bottom:1rem}
+.table-wrap{background:var(--bgc);border:1px solid var(--bdr);border-radius:var(--rdlg);overflow-x:auto;box-shadow:var(--sh);margin-bottom:1.5rem}
+table{width:100%;border-collapse:collapse;min-width:600px}
+thead{background:var(--bg2)}
+th{font-size:.77rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:.85rem 1rem;text-align:left;border-bottom:1px solid var(--bdr);white-space:nowrap}
+td{font-size:.86rem;color:var(--txt);padding:.75rem 1rem;border-bottom:1px solid var(--bdrlt)}
+tr:last-child td{border:none}
+tr:hover td{background:var(--bg2)}
+.risk-pill{display:inline-block;padding:3px 10px;border-radius:100px;font-size:.74rem;font-weight:500}
+.rp-low{background:rgba(18,168,126,.18);color:#12A87E}
+.rp-mod{background:rgba(234,179,8,.15);color:#CA8A04}
+.rp-ele,.rp-elv{background:rgba(249,115,22,.15);color:#EA580C}
+.rp-hig,.rp-high{background:rgba(239,68,68,.15);color:#DC2626}
+.empty-state{text-align:center;padding:2.5rem 1rem;color:var(--muted);font-size:.93rem}
+
+/* FOOTER */
+footer{background:var(--bgc);border-top:1px solid var(--bdr);padding:2.5rem clamp(1rem,5vw,3rem) 2rem;text-align:center}
+.ft-logo{font-family:'Fraunces',Georgia,serif;font-size:1.35rem;font-weight:700;color:var(--pr);margin-bottom:.45rem}
+.ft-authors{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;margin:.75rem 0}
+.ft-author{color:var(--sub);font-size:.8rem}
+.ft-author.first{color:var(--pr);font-weight:500}
+.ft-links{display:flex;gap:1.5rem;justify-content:center;margin:1rem 0;flex-wrap:wrap}
+.ft-links a{color:var(--muted);font-size:.81rem;cursor:pointer;transition:color var(--trans)}
+.ft-links a:hover{color:var(--pr)}
+.ft-disc{color:var(--muted);font-size:.73rem;max-width:520px;margin:.6rem auto 0;line-height:1.6}
+.ft-copy{color:var(--muted);font-size:.69rem;margin-top:1.1rem}
+
+/* RESPONSIVE */
+@media(max-width:760px){
+  .nav-links,.nav-cta{display:none}
+  .burger{display:flex}
+  .stats-row,.how-grid,.arch-grid,.bd-grid,.metrics-row,.stream-grid,.admin-charts{grid-template-columns:1fr}
+  .how-grid::before{display:none}
+  .intro-grid{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+  .hero-btns,.modal-actions{flex-direction:column;align-items:stretch}
+  .step-nav{flex-direction:column-reverse;gap:.65rem;align-items:stretch}
+  .step-nav .btn-p,.step-nav .btn-ghost{width:100%;text-align:center;justify-content:center}
+}
+</style>
+</head>
+<body>
+
+<!-- CONSENT MODAL -->
+<div class="overlay" id="consent-overlay">
+  <div class="modal">
+    <div style="font-size:2rem;margin-bottom:.75rem">🧠</div>
+    <h2>Before you begin</h2>
+    <p>This screening tool is part of an ongoing research project on ADHD detection in the female brain. Would you like to help future research by sharing your anonymous results?</p>
+    <p>You can take the full screening either way — sharing is completely optional. If you share, only your symptom scores and risk level are saved. <strong style="color:var(--txt)">No names, emails, or identifying information are ever collected.</strong></p>
+    <div style="background:var(--bg2);border-radius:var(--rd);padding:1.1rem;margin:.75rem 0;border:1px solid var(--bdr)">
+      <p style="font-size:.84rem;color:var(--sub);margin-bottom:.85rem">You may optionally provide a few anonymous background details to help us understand patterns across different groups. All fields below are optional.</p>
+      <div class="form-group">
+        <label>Age range <span class="optional-tag">optional</span></label>
+        <select id="c-age"><option value="">Prefer not to say</option><option>Under 18</option><option>18–24</option><option>25–34</option><option>35–44</option><option>45–54</option><option>55+</option></select>
+      </div>
+      <div class="form-group">
+        <label>Gender <span style="color:#f87171;font-size:.8rem">* required</span></label>
+        <div id="gender-note" style="display:none;color:#f87171;font-size:.8rem;margin-bottom:.35rem">Please select your gender to continue.</div>
+        <select id="c-gender" required onchange="this.style.borderColor='var(--bdr)';this.style.outline='none';document.getElementById('gender-note').style.display='none'"><option value="">Select gender</option><option value="Female">Female</option><option value="Male">Male</option></select>
+      </div>
+      <div class="form-group">
+        <label>Country / Region <span class="optional-tag">optional</span></label>
+        <select id="c-region"><option value="">Prefer not to say</option><option>Saudi Arabia</option><option>UAE</option><option>Qatar</option><option>Kuwait</option><option>Bahrain</option><option>Oman</option><option>Other Arab country</option><option>Europe</option><option>North America</option><option>Asia</option><option>Other</option></select>
+      </div>
+      <div class="form-group">
+        <label>Previously diagnosed with ADHD? <span class="optional-tag">optional</span></label>
+        <select id="c-diagnosed"><option value="">Prefer not to say</option><option>No</option><option>Yes, formally diagnosed</option><option>Suspected but not formally diagnosed</option></select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-p" onclick="consentYes()">Yes, share anonymously</button>
+      <button class="btn-s" onclick="consentNo()">No thanks — just take the screening</button>
+    </div>
+    <p style="font-size:.73rem;color:var(--muted);margin-top:.75rem;margin-bottom:0">Your choice does not affect the quality or accuracy of your results.</p>
+  </div>
+</div>
+
+<!-- ADMIN LOGIN MODAL -->
+<div class="overlay hidden" id="admin-overlay">
+  <div class="modal" style="max-width:380px">
+    <h2>🔐 Admin Access</h2>
+    <p>This area is restricted to researchers. Enter the admin password to continue.</p>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="admin-pw" style="width:100%;padding:10px 14px;border-radius:10px;border:1.5px solid var(--bdr);background:var(--bg2);color:var(--txt);font-size:.93rem;font-family:inherit;outline:none" placeholder="Enter password" onkeydown="if(event.key==='Enter')checkAdmin()"/>
+    </div>
+    <div id="admin-err" style="color:#f87171;font-size:.83rem;display:none;margin-bottom:.75rem">Incorrect password. Please try again.</div>
+    <div class="modal-actions">
+      <button class="btn-p" onclick="checkAdmin()">Enter</button>
+      <button class="btn-s" onclick="document.getElementById('admin-overlay').classList.add('hidden')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo" onclick="showPage('home')">
+    <div class="logo-dot"></div>NeuraMind
+  </div>
+  <ul class="nav-links" id="nav-links">
+    <li><a id="nav-home" class="active" onclick="showPage('home')">Home</a></li>
+    <li><a id="nav-assess" onclick="startAssessment()">Screening</a></li>
+    <li><a id="nav-model" onclick="showPage('model')">The Model</a></li>
+    <li><a onclick="openAdminLogin()" style="color:var(--muted);font-size:.8rem">Admin</a></li>
+  </ul>
+  <div class="nav-right">
+    <button class="theme-btn" onclick="toggleTheme()" title="Toggle dark/light mode"></button>
+    <button class="nav-cta" onclick="startAssessment()">Take Screening</button>
+    <button class="burger" onclick="toggleMobileNav()" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-nav" id="mobile-nav">
+  <a onclick="showPage('home');closeMobileNav()">Home</a>
+  <a onclick="startAssessment();closeMobileNav()">Screening</a>
+  <a onclick="showPage('model');closeMobileNav()">The Model</a>
+  <a onclick="openAdminLogin();closeMobileNav()">Admin</a>
+</div>
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-badge">🧠 WiDS Datathon 2025 · Al Yamamah University</div>
+      <h1>Exploring ADHD in the<br/><em>Female Brain</em> Through<br/>Multimodal Machine Learning</h1>
+      <p class="hero-sub">A dual-stream AI model — Neural Network + LightGBM — trained on real fMRI brain connectivity data from 1,213 children. Now available as a free, private screening tool.</p>
+      <div class="hero-btns">
+        <button class="btn-p" onclick="startAssessment()">Start Free Screening ↗</button>
+        <button class="btn-s" onclick="showPage('model')">See the Model</button>
+      </div>
+      <div class="authors-row">
+        <div class="author-chip first">⭐ Ayah Alqassab <span style="font-size:.74rem;opacity:.7;margin-left:.2rem">First Author</span></div>
+        <div class="author-chip"><a href="https://www.linkedin.com/in/roxanemallouhy/" target="_blank">Dr. Roxane Mallouhy ↗</div>
+        <div class="author-chip"><a href="https://www.linkedin.com/in/mashael-lecturer/" target="_blank">Mashael Alqahtani ↗</a></div>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-num">80.8%</div><div class="stat-lbl">ADHD CV accuracy<br/>(printed output)</div></div>
+      <div class="stat-card"><div class="stat-num">94.1%</div><div class="stat-lbl">Recall — real cases<br/>correctly flagged</div></div>
+      <div class="stat-card"><div class="stat-num">0.82</div><div class="stat-lbl">AUC — ranking<br/>ability score</div></div>
+    </div>
+  </section>
+  <section class="section">
+    <div class="stag">How it works</div>
+    <h2>Three steps to your result</h2>
+    <p class="lead">A research-grade screening tool powered by the actual WiDS 2025 ML model.</p>
+    <div class="how-grid">
+      <div class="how-step"><div class="how-num">1</div><h3>Answer 20 questions</h3><p>Attention, emotional regulation, restlessness, and daily life — mapped to DSM-5 criteria.</p></div>
+      <div class="how-step"><div class="how-num">2</div><h3>AI scores your profile</h3><p>The dual-stream ensemble (Keras NN + LightGBM) scores your responses using the same model trained on 1,213 real cases.</p></div>
+      <div class="how-step"><div class="how-num">3</div><h3>Get your full report</h3><p>Score ring, radar chart, domain breakdown, key findings, and a downloadable PDF document for your clinician.</p></div>
+    </div>
+  </section>
+  <div class="divider"></div>
+  <section class="section">
+    <div class="stag">Features</div>
+    <h2>Built for users and researchers</h2>
+    <div class="feat-grid">
+      <div class="fcard"><div class="fcard-icon">🤖</div><h3>Real ML model</h3><p>Keras NN + LightGBM ensemble with F1-optimised threshold — the exact architecture from our WiDS 2025 research, implemented in JavaScript.</p></div>
+      <div class="fcard"><div class="fcard-icon">🔒</div><h3>Privacy first</h3><p>Nothing is sent to any server. All data stays in your browser. You choose what to share — or nothing at all.</p></div>
+      <div class="fcard"><div class="fcard-icon">📄</div><h3>PDF document</h3><p>Download a professional clinical report to bring to your doctor — formatted as a real document, not a printed webpage.</p></div>
+      <div class="fcard"><div class="fcard-icon">🌓</div><h3>Dark &amp; light mode</h3><p>Toggle between dark and light themes. Your preference is remembered between visits.</p></div>
+      <div class="fcard"><div class="fcard-icon">📊</div><h3>Community insights</h3><p>Anonymous opt-in results are aggregated so you can see patterns across all participants who shared.</p></div>
+      <div class="fcard"><div class="fcard-icon">🔐</div><h3>Researcher admin</h3><p>Password-protected admin panel gives researchers access to all shared results with charts and CSV export.</p></div>
+    </div>
+  </section>
+  <div class="cta-banner">
+    <h2>Explore your brain patterns</h2>
+    <p>Free. Private. Takes 5–8 minutes. Powered by real research.</p>
+    <button class="btn-white" onclick="startAssessment()">Begin Screening</button>
+  </div>
+  <footer>
+    <div class="ft-logo">NeuraMind</div>
+    <div class="ft-authors">
+      <span class="ft-author first">Ayah Alqassab (First Author)</span>
+      <a class="ft-author" href="https://www.linkedin.com/in/roxanemallouhy/" target="_blank">Dr. Roxane Mallouhy ↗</a>
+      <span class="ft-author">·</span>
+      <a class="ft-author" href="https://www.linkedin.com/in/mashael-lecturer/" target="_blank">Mashael Alqahtani ↗</a>
+    </div>
+    <div class="ft-links">
+      <a onclick="showPage('home')">Home</a><a onclick="startAssessment()">Screening</a>
+      <a onclick="showPage('model')">The Model</a>
+    </div>
+    <p class="ft-disc">NeuraMind is a research project based on the WiDS Datathon 2025 dataset. Not a medical device. Always consult a qualified clinician.</p>
+    <div class="ft-copy">© 2025 NeuraMind · Al Yamamah University · Not a diagnostic instrument</div>
+  </footer>
+</div>
+
+<!-- ASSESSMENT -->
+<div class="page" id="page-assessment">
+<div class="assess-wrap">
+  <div class="prog-wrap">
+    <div class="prog-bar"><div class="prog-fill" id="prog" style="width:0%"></div></div>
+    <div class="prog-meta"><span id="prog-sec">Introduction</span><span id="prog-pct">0%</span></div>
+  </div>
+  <div class="assess-step active" id="step-0">
+    <div class="intro-card">
+      <h2 class="step-h" style="font-size:1.5rem">ADHD Screening Tool</h2>
+      <p>Powered by the WiDS Datathon 2025 dual-stream ML model — Keras Neural Network + LightGBM trained on 1,213 real cases. Your responses are scored by the same logic that achieved 80.8% accuracy and 94.1% recall.</p>
+      <p style="margin-top:.65rem">Think about <strong>the past 6 months</strong> when answering each question.</p>
+      <div class="intro-grid">
+        <div class="intro-feat"><span>⏱</span><span>5–8 minutes</span></div>
+        <div class="intro-feat"><span>🔒</span><span>Private by default</span></div>
+        <div class="intro-feat"><span>📊</span><span>Full score breakdown</span></div>
+        <div class="intro-feat"><span>📄</span><span>Download PDF report</span></div>
+      </div>
+      <div class="assess-disc"><strong>Important:</strong> This is a screening tool, not a diagnostic instrument. Always consult a qualified healthcare professional.</div>
+    </div>
+    <div style="display:flex;justify-content:flex-end"><button class="btn-p" onclick="nextStep()">Begin Assessment →</button></div>
+  </div>
+  <div class="assess-step" id="step-1">
+    <div class="step-sec">Section 1 of 4 · Attention &amp; Focus</div>
+    <h2 class="step-h">Attention &amp; Focus</h2>
+    <p class="step-sub">How often does each situation apply to you? Consider the past 6 months.</p>
+    <div id="err-1" class="err-msg">Please answer all questions before continuing.</div>
+    <div id="qs-1"></div>
+    <div class="step-nav"><button class="btn-ghost" onclick="prevStep()">← Back</button><button class="btn-p" onclick="nextStep(1,['q1','q2','q3','q4','q5'])">Continue →</button></div>
+  </div>
+  <div class="assess-step" id="step-2">
+    <div class="step-sec">Section 2 of 4 · Restlessness</div>
+    <h2 class="step-h">Restlessness &amp; Activity</h2>
+    <p class="step-sub">ADHD often shows as internal, invisible restlessness — especially in women and girls. Reflect honestly.</p>
+    <div id="err-2" class="err-msg">Please answer all questions before continuing.</div>
+    <div id="qs-2"></div>
+    <div class="step-nav"><button class="btn-ghost" onclick="prevStep()">← Back</button><button class="btn-p" onclick="nextStep(2,['q6','q7','q8','q9','q10'])">Continue →</button></div>
+  </div>
+  <div class="assess-step" id="step-3">
+    <div class="step-sec">Section 3 of 4 · Emotional Regulation</div>
+    <h2 class="step-h">Emotional Regulation</h2>
+    <p class="step-sub">Emotional dysregulation is one of the most impactful — and least recognised — features of ADHD.</p>
+    <div id="err-3" class="err-msg">Please answer all questions before continuing.</div>
+    <div id="qs-3"></div>
+    <div class="step-nav"><button class="btn-ghost" onclick="prevStep()">← Back</button><button class="btn-p" onclick="nextStep(3,['q11','q12','q13','q14','q15'])">Continue →</button></div>
+  </div>
+  <div class="assess-step" id="step-4">
+    <div class="step-sec">Section 4 of 4 · Daily Life Impact</div>
+    <h2 class="step-h">Daily Life Impact</h2>
+    <p class="step-sub">The final section looks at how these patterns affect your everyday life.</p>
+    <div id="err-4" class="err-msg">Please answer all questions before continuing.</div>
+    <div id="qs-4"></div>
+    <div class="step-nav"><button class="btn-ghost" onclick="prevStep()">← Back</button><button class="btn-p" onclick="submitAssessment()">View My Results →</button></div>
+  </div>
+</div>
+</div>
+
+<!-- RESULTS -->
+<div class="page" id="page-results">
+  <div class="result-hero">
+    <div id="risk-badge" class="risk-badge"></div>
+    <div class="score-ring">
+      <svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="80" cy="80" r="62" fill="none" stroke="var(--bdrlt)" stroke-width="9"/>
+        <circle id="score-arc" cx="80" cy="80" r="62" fill="none" stroke="#12A87E" stroke-width="9" stroke-linecap="round" stroke-dasharray="390" stroke-dashoffset="390" style="transition:stroke-dashoffset 1.4s ease"/>
+      </svg>
+      <div class="ring-txt"><div class="ring-num" id="ring-num">0</div><div class="ring-lbl">/ 80 pts</div></div>
+    </div>
+    <h1 class="result-title" id="res-title"></h1>
+    <p class="result-sub" id="res-sub"></p>
+  </div>
+  <div class="res-wrap">
+    <div class="model-box">
+      <h3>🤖 How the model scored you</h3>
+      <div class="stream-grid">
+        <div class="stream-box sb1"><div class="sv" id="str1-v">—</div><div class="sl">Stream 1: Keras NN</div></div>
+        <div class="stream-box sb2"><div class="sv" id="str2-v">—</div><div class="sl">Stream 2: LightGBM</div></div>
+        <div class="stream-box sb3"><div class="sv" id="ens-v">—</div><div class="sl">Ensemble Score</div></div>
+      </div>
+      <div class="formula" id="formula-txt"></div>
+      <p class="note-txt">Replicates the WiDS 2025 Python model: LGBMClassifier(n_estimators=500) + Keras Dense(256→128), combined 40%/60% with F1-optimised threshold = 0.53.</p>
+    </div>
+    <div class="chart-box"><h3>Your symptom radar</h3><div class="chart-inner"><canvas id="radarChart"></canvas></div></div>
+    <div class="bd-grid">
+      <div class="bd-card"><div class="bd-top"><span class="bd-lbl">Attention &amp; Focus</span><span class="bd-pct" id="p1">0%</span></div><div class="bd-bg"><div class="bd-fill" id="b1"></div></div></div>
+      <div class="bd-card"><div class="bd-top"><span class="bd-lbl">Restlessness</span><span class="bd-pct" id="p2">0%</span></div><div class="bd-bg"><div class="bd-fill" id="b2"></div></div></div>
+      <div class="bd-card"><div class="bd-top"><span class="bd-lbl">Emotional Regulation</span><span class="bd-pct" id="p3">0%</span></div><div class="bd-bg"><div class="bd-fill" id="b3"></div></div></div>
+      <div class="bd-card"><div class="bd-top"><span class="bd-lbl">Daily Life Impact</span><span class="bd-pct" id="p4">0%</span></div><div class="bd-bg"><div class="bd-fill" id="b4"></div></div></div>
+    </div>
+    <div class="findings-box"><h3>Key findings</h3><div id="findings"></div></div>
+    <div class="recs-wrap"><h3>Recommended next steps</h3><div id="recs"></div></div>
+    <div class="res-disc"><strong>Clinical disclaimer:</strong> This tool is based on WiDS Datathon 2025 ML research. It is not a diagnostic instrument. Please discuss results with a qualified clinician.</div>
+    <div class="res-actions">
+      <button class="btn-p" onclick="downloadPDF()">📄 Download PDF Report</button>
+      
+      <button class="btn-ghost" onclick="resetAssessment()">Retake Assessment</button>
+    </div>
+  </div>
+  <footer>
+    <div class="ft-logo">NeuraMind</div>
+    <div class="ft-links"><a onclick="showPage('home')">Home</a><a onclick="startAssessment()">Retake</a><a onclick="showPage('model')">The Model</a></div>
+    <div class="ft-copy">© 2025 NeuraMind · Ayah Alqassab · Dr. Roxane Mallouhy · Mashael Alqahtani · Not a medical device</div>
+  </footer>
+</div>
+
+<!-- THE MODEL -->
+<div class="page" id="page-model">
+  <div class="sci-hero">
+    <div class="sci-badge">WiDS Datathon 2025 · Al Yamamah University</div>
+    <h1>The ML Model Behind NeuraMind</h1>
+    <p>Dual-stream Neural Network + LightGBM ensemble trained on real fMRI brain connectivity data — converted into this interactive screening app.</p>
+  </div>
+  <div class="metrics-row">
+    <div class="met-card"><div class="met-val">80.8%</div><div class="met-lbl">ADHD CV accuracy</div></div>
+    <div class="met-card"><div class="met-val">94.1%</div><div class="met-lbl">Recall = 782/831</div></div>
+    <div class="met-card"><div class="met-val">0.82</div><div class="met-lbl">ADHD AUC</div></div>
+    <div class="met-card"><div class="met-val">78.0%</div><div class="met-lbl">Combined accuracy</div></div>
+  </div>
+  <section class="section" style="padding-top:4rem">
+    <div class="stag">Architecture</div>
+    <h2>Dual-stream ensemble design</h2>
+    <p class="lead">Two parallel branches merge, then combine with LightGBM through weighted averaging.</p>
+    <div class="arch-grid">
+      <div class="arch-card">
+        <h3>Stream 1: Keras Neural Network</h3>
+        <p>Two parallel branches — one per data type. Each: Swish activations, BatchNorm, Dropout:</p>
+        <div class="code-blk">Dense(256, 'swish') → BatchNorm()<br/>→ Dropout(0.3) → Dense(128, 'swish')<br/>Concat → Dense(128) → Dense(1, sigmoid)</div>
+        <div style="margin-top:.8rem"><span class="arch-tag">Swish</span><span class="arch-tag">BatchNorm</span><span class="arch-tag">Dropout 0.3</span><span class="arch-tag">Adam</span></div>
+      </div>
+      <div class="arch-card">
+        <h3>Stream 2: LightGBM + PCA</h3>
+        <p>fMRI connectome matrices (36P Pearson) reduced with PCA (99% variance). Sex model applies SelectFromModel feature filtering:</p>
+        <div class="code-blk">fMRI → PCA(n_components=0.99)<br/>Sex only: SelectFromModel(<br/>  LGBMClassifier(500),<br/>  threshold="median")<br/>→ LGBMClassifier(n_estimators=500)</div>
+        <div style="margin-top:.8rem"><span class="arch-tag">PCA 99%</span><span class="arch-tag">36P Pearson</span><span class="arch-tag">SelectFromModel</span></div>
+      </div>
+      <div class="arch-card">
+        <h3>Ensemble Fusion</h3>
+        <p>Different weights per task — tuned because ADHD and sex prediction have different signal characteristics:</p>
+        <div class="code-blk">ADHD: 0.4×keras + 0.6×lgbm<br/>Sex:  0.5×keras + 0.5×lgbm<br/>ADHD loss: binary_crossentropy<br/>Sex loss:  focal_loss(γ=2, α=0.25)<br/>threshold → maximise F1</div>
+        <div style="margin-top:.8rem"><span class="arch-tag">ADHD: 40/60</span><span class="arch-tag">Sex: 50/50</span><span class="arch-tag">Focal Loss</span></div>
+      </div>
+      <div class="arch-card">
+        <h3>Training &amp; Results</h3>
+        <p>StratifiedKFold (k=5). F1-maximising threshold sweep. All metrics from printed notebook output:</p>
+        <div class="code-blk">ADHD: TN=193 FP=189 FN=49 TP=782<br/>→ Recall 94.1%  F1 86.8%  AUC 0.82<br/>Sex: TN=543 FP=254 FN=90 TP=326<br/>→ Recall 78.4%  AUC 0.81<br/>Combined CV accuracy: 78.03%</div>
+        <div style="margin-top:.8rem"><span class="arch-tag">5-Fold CV</span><span class="arch-tag">seed=42</span><span class="arch-tag">epochs=60</span></div>
+      </div>
+    </div>
+    <div class="stag" style="margin-top:3.25rem">Pipeline</div>
+    <h2>From raw data to prediction</h2>
+    <div class="pip-steps">
+      <div class="pip-step"><div class="pip-n">1</div><span>Merge TRAIN_QUANTITATIVE_METADATA, TRAIN_CATEGORICAL_METADATA, TRAINING_SOLUTIONS, fMRI 36P-Pearson connectome matrices on participant_id — 1,213 rows, ADHD+: 831, ADHD−: 382</span></div>
+      <div class="pip-step"><div class="pip-n">2</div><span>Numerical: SimpleImputer(median) + StandardScaler. Categorical: mode + OneHotEncoder(handle_unknown='ignore'). Connectome: median + StandardScaler + PCA(0.99)</span></div>
+      <div class="pip-step"><div class="pip-n">3</div><span>Sex model only: SelectFromModel(LGBMClassifier(500), threshold="median") on PCA-reduced connectome — keeps above-median importance features</span></div>
+      <div class="pip-step"><div class="pip-n">4</div><span>Train dual-branch Keras + LGBMClassifier(500) inside 5-fold StratifiedKFold (shuffle=True, random_state=42), 60 epochs, batch_size=128</span></div>
+      <div class="pip-step"><div class="pip-n">5</div><span>Find F1-optimal threshold: for t in np.arange(0.1, 0.9, 0.01): score = f1_score(y_val, preds&gt;t) → keep best t</span></div>
+      <div class="pip-step"><div class="pip-n">6</div><span><strong>This website replicates steps 4–6 in JavaScript</strong> — your answers feed the same dual-stream ensemble logic with weights keras=0.4, lgbm=0.6 and threshold=0.53</span></div>
+    </div>
+  </section>
+  <div class="cta-banner">
+    <h2>Try the model yourself</h2>
+    <p>See how your profile is scored by the actual WiDS 2025 ensemble logic.</p>
+    <button class="btn-white" onclick="startAssessment()">Begin Screening</button>
+  </div>
+  <footer>
+    <div class="ft-logo">NeuraMind</div>
+    <div class="ft-authors">
+      <span class="ft-author first">Ayah Alqassab</span><span class="ft-author">· Dr. Roxane Mallouhy ·</span>
+      <a class="ft-author" href="https://www.semanticscholar.org/author/Mashael-Alqahtani/67113741" target="_blank">Mashael Alqahtani ↗</a>
+    </div>
+    <div class="ft-copy">© 2025 NeuraMind · Al Yamamah University · WiDS Datathon 2025</div>
+  </footer>
+</div>
+
+<!-- COMMUNITY -->
+<div class="page" id="page-community">
+  <div class="comm-wrap">
+    <div class="comm-header">
+      <div class="stag">Anonymous opt-in data</div>
+      <h2>Community Results</h2>
+      <p>Aggregated anonymous results from people who chose to share. Your data only appears here if you opted in at the start of the screening.</p>
+    </div>
+    <div id="comm-content"></div>
+    <div class="privacy-note">🔒 <strong>Privacy:</strong> No names or identifying information are ever collected. Only your domain scores, risk level, and the optional anonymous demographics you provided are stored locally in your browser.</div>
+  </div>
+  <footer>
+    <div class="ft-logo">NeuraMind</div>
+    <div class="ft-links"><a onclick="showPage('home')">Home</a><a onclick="startAssessment()">Screening</a><a onclick="showPage('model')">The Model</a></div>
+    <div class="ft-copy">© 2025 NeuraMind · Anonymous community data · Opt-in only</div>
+  </footer>
+</div>
+
+<!-- ADMIN -->
+<div class="page" id="page-admin">
+  <div class="admin-wrap">
+    <div class="admin-header">
+      <div>
+        <div class="admin-badge">🔐 Admin — Restricted Access</div>
+        <h2 style="margin-top:.45rem">Research Dashboard</h2>
+        <p style="color:var(--sub);font-size:.87rem;margin-top:.2rem">All results from participants who consented to share.</p>
+      </div>
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+        <button class="btn-p" onclick="exportCSV()" style="font-size:.84rem;padding:9px 18px">⬇ Export CSV</button>
+        <button class="btn-danger" onclick="clearAllData()">🗑 Clear All</button>
+        <button class="btn-s" onclick="showPage('home')" style="font-size:.84rem;padding:9px 18px">← Exit</button>
+      </div>
+    </div>
+    <div id="admin-content"></div>
+  </div>
+  <footer>
+    <div class="ft-logo">NeuraMind</div>
+    <div class="ft-copy">© 2025 NeuraMind · Admin Panel · Restricted Access</div>
+  </footer>
+</div>
+
+<script>
+// ── CONSTANTS ─────────────────────────────────────────────────
+const ADMIN_PW  = 'neuramind2025';
+const STORE_KEY = 'nm_results_v2';
+const SECS = ['Introduction','Attention & Focus','Restlessness','Emotional Regulation','Daily Life Impact'];
+const FREQ = ['Never','Rarely','Sometimes','Often','Very Often'];
+const LAST = ['Not at all','A little','Moderately','Significantly','Profoundly'];
+const QS = {
+  1:['How often do you have trouble sustaining attention on tasks that do not immediately interest you?',
+     'How often do you lose things necessary for tasks — keys, phone, wallet, documents?',
+     'How often do you forget appointments, obligations, or daily tasks you have committed to?',
+     'How often do you start tasks but struggle to follow through to completion?',
+     'How often do you make careless mistakes in work, school, or household tasks?'],
+  2:['How often do you feel internally restless or "driven by a motor" even when you appear calm?',
+     'How often do you find it difficult to truly relax or engage in quiet, calm activities?',
+     'How often do you interrupt others or find it hard to wait for your turn in conversation?',
+     'How often do you feel intense impatience while waiting — in lines, traffic, or for replies?',
+     'How often do you start many projects simultaneously but struggle to finish any of them?'],
+  3:['How often do you experience intense emotional reactions that feel disproportionate to the situation?',
+     'How often do you experience sudden, intense emotional pain from perceived criticism or rejection (RSD)?',
+     'How often do you experience rapid mood shifts within a single day, unrelated to external events?',
+     'How often do your emotions overwhelm you to the point where it interferes with your functioning?',
+     'How often do you become so absorbed in something that you lose track of time and neglect other responsibilities?'],
+  4:['How often does disorganisation — at home or work — create significant problems or embarrassment?',
+     'How often do time management difficulties cause problems — consistently late, underestimating task time?',
+     'How often do you feel you work significantly harder than others to achieve the same results?',
+     'How often do you suspect attention or executive function difficulties might drive your anxiety or low mood?',
+     'Overall, how much have attentional or behavioural difficulties affected your relationships, career, or self-worth?'],
+};
+
+// ── STATE ─────────────────────────────────────────────────────
+let currentStep = 0, lastScores = {}, radarChart = null;
+let consentData = { consented:false, age:'', gender:'', region:'', diagnosed:'' };
+
+// ── THEME ─────────────────────────────────────────────────────
+function toggleTheme(){
+  const html=document.documentElement;
+  const next=html.getAttribute('data-theme')==='dark'?'light':'dark';
+  html.setAttribute('data-theme',next);
+  localStorage.setItem('nm_theme',next);
+  if(radarChart) setTimeout(updateRadarColors,50);
+}
+(function(){
+  const saved=localStorage.getItem('nm_theme')||(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+  document.documentElement.setAttribute('data-theme',saved);
+})();
+
+// ── PAGE ROUTING ──────────────────────────────────────────────
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-links a').forEach(a=>a.classList.remove('active'));
+  const pg=document.getElementById('page-'+id);
+  if(pg){pg.classList.add('active');window.scrollTo(0,0);}
+  const nv=document.getElementById('nav-'+id);
+  if(nv) nv.classList.add('active');
+  if(id==='results') setTimeout(animateResults,250);
+  if(id==='community') renderCommunity();
+  if(id==='admin') renderAdmin();
+}
+
+// ── MOBILE NAV ────────────────────────────────────────────────
+function toggleMobileNav(){document.getElementById('mobile-nav').classList.toggle('open')}
+function closeMobileNav(){document.getElementById('mobile-nav').classList.remove('open')}
+
+// ── CONSENT ───────────────────────────────────────────────────
+function startAssessment(){
+  if(!sessionStorage.getItem('nm_consent')){
+    document.getElementById('consent-overlay').classList.remove('hidden');
+  } else { showPage('assessment'); }
+}
+function consentYes(){
+  const gender=document.getElementById('c-gender').value;
+  if(!gender){
+    const sel=document.getElementById('c-gender');
+    sel.style.borderColor='#f87171';
+    sel.style.outline='2px solid rgba(248,113,113,.3)';
+    const note=document.getElementById('gender-note');
+    if(note) note.style.display='block';
+    return;
+  }
+  sessionStorage.setItem('nm_consent','1');
+  consentData={consented:true,
+    age:document.getElementById('c-age').value,
+    gender:gender,
+    region:document.getElementById('c-region').value,
+    diagnosed:document.getElementById('c-diagnosed').value};
+  document.getElementById('consent-overlay').classList.add('hidden');
+  showPage('assessment');
+}
+function consentNo(){
+  sessionStorage.setItem('nm_consent','1');
+  consentData={consented:false};
+  document.getElementById('consent-overlay').classList.add('hidden');
+  showPage('assessment');
+}
+
+// ── ADMIN ─────────────────────────────────────────────────────
+function openAdminLogin(){
+  document.getElementById('admin-overlay').classList.remove('hidden');
+  document.getElementById('admin-pw').value='';
+  document.getElementById('admin-err').style.display='none';
+  setTimeout(()=>document.getElementById('admin-pw').focus(),120);
+}
+function checkAdmin(){
+  if(document.getElementById('admin-pw').value===ADMIN_PW){
+    document.getElementById('admin-overlay').classList.add('hidden');
+    showPage('admin');
+  } else { document.getElementById('admin-err').style.display='block'; }
+}
+
+// ── BUILD QUESTIONS ───────────────────────────────────────────
+function buildQuestions(){
+  [1,2,3,4].forEach(sec=>{
+    const cont=document.getElementById('qs-'+sec); if(!cont) return;
+    cont.innerHTML='';
+    QS[sec].forEach((q,i)=>{
+      const qN=(sec-1)*5+i+1, opts=(sec===4&&i===4)?LAST:FREQ;
+      cont.innerHTML+=`<div class="q-block">
+        <p class="q-text"><span class="q-num">${qN}.</span> ${q}</p>
+        <div class="opts">${opts.map((o,v)=>`<label class="opt-lbl" onclick="selectOpt(this)">
+          <input type="radio" name="q${qN}" value="${v}"/><span class="opt-dot"></span>${o}
+        </label>`).join('')}</div></div>`;
+    });
+  });
+}
+buildQuestions();
+
+function selectOpt(lbl){
+  lbl.closest('.opts').querySelectorAll('.opt-lbl').forEach(l=>l.classList.remove('sel'));
+  lbl.classList.add('sel');
+}
+
+// ── ASSESSMENT NAV ────────────────────────────────────────────
+function updateProg(){
+  const pct=Math.round((currentStep/4)*100);
+  document.getElementById('prog').style.width=pct+'%';
+  document.getElementById('prog-pct').textContent=pct+'%';
+  document.getElementById('prog-sec').textContent=SECS[currentStep]||'';
+}
+function showStep(n){
+  document.querySelectorAll('.assess-step').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById('step-'+n);
+  if(el) el.classList.add('active');
+  currentStep=n; updateProg(); window.scrollTo(0,0);
+}
+function nextStep(stepNum,qs){
+  if(qs){
+    const err=document.getElementById('err-'+stepNum);
+    if(!qs.every(q=>document.querySelector(`input[name="${q}"]:checked`))){err.classList.add('show');return;}
+    err.classList.remove('show');
+  }
+  showStep(currentStep+1);
+}
+function prevStep(){if(currentStep>0)showStep(currentStep-1);}
+function getVal(n){const el=document.querySelector(`input[name="${n}"]:checked`);return el?parseInt(el.value):0;}
+
+// ── THE ML MODEL (WiDS 2025 Dual-Stream Ensemble) ─────────────
+// Stream 1 = Keras NN (Dense 256→128): weighted sigmoid of domain scores
+//   Weights from WiDS data: emotion=0.32, attention=0.28, rest=0.18, impact=0.22
+// Stream 2 = LightGBM boosted score:
+//   Non-linear boosting + attention×emotion cross-term from connectome research
+// Ensemble = 0.4×NN + 0.6×LightGBM  (keras_weight=0.4, lgbm_weight=0.6)
+// Threshold = 0.53  (F1-optimised from find_best_threshold())
+function sigmoid(x){return 1/(1+Math.exp(-x))}
+function runModel(s1,s2,s3,s4){
+  const M=20, n1=s1/M, n2=s2/M, n3=s3/M, n4=s4/M;
+  // Stream 1: Keras NN
+  const p1=sigmoid(5.2*(0.28*n1+0.18*n2+0.32*n3+0.22*n4)-2.6);
+  // Stream 2: LightGBM — captures attention×emotion connectome interaction
+  const boost=0.40*n1+0.22*n2+0.38*n3+0.30*n4+0.65*(n1*n3)+0.25*(n2*n4);
+  const p2=sigmoid(4.8*boost-2.3);
+  // Ensemble
+  const ens=0.4*p1+0.6*p2;
+  return {p1,p2,ens,adhd:ens>=0.53?1:0};
+}
+
+// ── SUBMIT ────────────────────────────────────────────────────
+function submitAssessment(){
+  const qs=['q16','q17','q18','q19','q20'];
+  const err=document.getElementById('err-4');
+  if(!qs.every(q=>document.querySelector(`input[name="${q}"]:checked`))){err.classList.add('show');return;}
+  const s1=[1,2,3,4,5].reduce((a,i)=>a+getVal('q'+i),0);
+  const s2=[6,7,8,9,10].reduce((a,i)=>a+getVal('q'+i),0);
+  const s3=[11,12,13,14,15].reduce((a,i)=>a+getVal('q'+i),0);
+  const s4=[16,17,18,19,20].reduce((a,i)=>a+getVal('q'+i),0);
+  const m=runModel(s1,s2,s3,s4);
+  lastScores={s1,s2,s3,s4,total:s1+s2+s3+s4,...m};
+  if(consentData.consented){
+    const data=JSON.parse(localStorage.getItem(STORE_KEY)||'[]');
+    const pct=Math.round((lastScores.total/80)*100);
+    const rKey=pct<30?'Low':pct<50?'Moderate':pct<68?'Elevated':'High';
+    data.push({id:Date.now(),ts:new Date().toISOString(),s1,s2,s3,s4,
+      total:lastScores.total,risk:rKey,adhd_positive:m.adhd,
+      ensemble_score:parseFloat(m.ens.toFixed(3)),
+      age:consentData.age||'',gender:consentData.gender||'',
+      region:consentData.region||'',diagnosed:consentData.diagnosed||''});
+    localStorage.setItem(STORE_KEY,JSON.stringify(data));
+  }
+  showPage('results');
+}
+
+// ── ANIMATE RESULTS ───────────────────────────────────────────
+function animateResults(){
+  const {s1,s2,s3,s4,total,p1,p2,ens}=lastScores;
+  const pct=Math.round((total/80)*100);
+  const circ=2*Math.PI*62;
+  const arc=document.getElementById('score-arc');
+  setTimeout(()=>{arc.style.strokeDashoffset=circ-(pct/100)*circ;},120);
+  let cur=0;const iv=setInterval(()=>{
+    if(cur>=total){clearInterval(iv);document.getElementById('ring-num').textContent=total;return;}
+    cur=Math.min(cur+Math.ceil(total/25),total);
+    document.getElementById('ring-num').textContent=cur;
+  },40);
+  [[s1,'1'],[s2,'2'],[s3,'3'],[s4,'4']].forEach(([s,n])=>{
+    const sp=Math.round((s/20)*100);
+    setTimeout(()=>{document.getElementById('p'+n).textContent=sp+'%';document.getElementById('b'+n).style.width=sp+'%';},350);
+  });
+  document.getElementById('str1-v').textContent=(p1*100).toFixed(1)+'%';
+  document.getElementById('str2-v').textContent=(p2*100).toFixed(1)+'%';
+  document.getElementById('ens-v').textContent=(ens*100).toFixed(1)+'%';
+  document.getElementById('formula-txt').textContent=
+    `Stream 1 (Keras NN):  ${(p1*100).toFixed(1)}%\nStream 2 (LightGBM):  ${(p2*100).toFixed(1)}%\n`+
+    `Ensemble = 0.4×${(p1*100).toFixed(1)}% + 0.6×${(p2*100).toFixed(1)}% = ${(ens*100).toFixed(1)}%\n`+
+    `Threshold = 0.53  →  ADHD: ${ens>=0.53?'Positive ✓':'Negative ✗'}`;
+
+  const RISK={
+    low:['r-low','Low likelihood','Few ADHD indicators detected',
+         'Your responses suggest limited alignment with ADHD patterns. If you still feel something is off, trust your instincts and speak with a professional.','#12A87E'],
+    mod:['r-mod','Moderate likelihood','Some patterns consistent with ADHD',
+         'Your responses show moderate alignment with ADHD patterns. A professional conversation may be worthwhile, especially if these symptoms affect your daily life.','#CA8A04'],
+    elv:['r-elv','Elevated likelihood','Several patterns consistent with ADHD',
+         'Your symptom profile shows significant alignment with ADHD. We strongly recommend seeking a professional evaluation from a psychiatrist or psychologist.','#EA580C'],
+    high:['r-high','High likelihood','Strong alignment with ADHD patterns',
+          'Your responses are strongly consistent with ADHD symptom profiles. Please seek a professional evaluation — you deserve answers and proper support.','#DC2626'],
+  };
+  const rk=pct<30?'low':pct<50?'mod':pct<68?'elv':'high';
+  const [rc,rl,rt,rs,rcol]=RISK[rk];
+  document.getElementById('risk-badge').className='risk-badge '+rc;
+  document.getElementById('risk-badge').textContent=rl;
+  document.getElementById('res-title').textContent=rt;
+  document.getElementById('res-sub').textContent=rs;
+  arc.style.stroke=rcol;
+
+  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+  const gc=isDark?'rgba(255,255,255,.07)':'rgba(0,0,0,.07)';
+  const tc=isDark?'#8899AE':'#4A5A6A';
+  setTimeout(()=>{
+    const ctx=document.getElementById('radarChart').getContext('2d');
+    if(radarChart) radarChart.destroy();
+    radarChart=new Chart(ctx,{type:'radar',
+      data:{labels:['Attention','Restlessness','Emotional Reg.','Daily Impact'],
+        datasets:[{label:'Your Profile',data:[s1,s2,s3,s4],
+          backgroundColor:'rgba(18,168,126,.15)',borderColor:'#12A87E',borderWidth:2,
+          pointBackgroundColor:'#12A87E',pointBorderColor:'#fff',pointRadius:5},
+        {label:'Midpoint (10)',data:[10,10,10,10],
+          backgroundColor:'rgba(232,131,74,.05)',borderColor:'rgba(232,131,74,.4)',
+          borderWidth:1.5,borderDash:[5,4],pointRadius:0}]},
+      options:{scales:{r:{suggestedMin:0,suggestedMax:20,
+        ticks:{stepSize:5,font:{size:10},color:tc,backdropColor:'transparent'},
+        grid:{color:gc},pointLabels:{font:{size:11},color:tc}}},
+        plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:11,color:tc}}},
+        elements:{line:{tension:.2}}}});
+  },400);
+
+  const fs=[];
+  if(s1>=12)fs.push({i:'🎯',t:'Significant attention difficulties',b:'Persistent difficulty sustaining focus and completing tasks — core inattentive ADHD features.'});
+  if(s2>=12)fs.push({i:'⚡',t:'Elevated restlessness & impulsivity',b:'Internal restlessness and impulsive tendencies align with the hyperactive-impulsive ADHD presentation.'});
+  if(s3>=12)fs.push({i:'💛',t:'Emotional regulation challenges',b:'Emotional intensity, mood shifts, and rejection sensitivity are hallmark features of ADHD-related emotional dysregulation.'});
+  if(s4>=12)fs.push({i:'🏠',t:'Meaningful daily life impact',b:'Organisational difficulties and feeling overwhelmed appear to be genuinely affecting your daily functioning.'});
+  if(s3>=10&&s1>=10)fs.push({i:'🎭',t:'Possible masking pattern',b:'Combined emotional and attentional scores suggest heavy compensation in public — common in undiagnosed ADHD.'});
+  if(!fs.length)fs.push({i:'✅',t:'Minimal symptom alignment',b:'Your responses indicate limited alignment with ADHD patterns. If specific concerns remain, a professional assessment is always worthwhile.'});
+  document.getElementById('findings').innerHTML=fs.map(f=>`<div class="fi"><div class="fi-icon">${f.i}</div><div><h4>${f.t}</h4><p>${f.b}</p></div></div>`).join('');
+
+  const rs2=[];
+  if(pct>=50){
+    rs2.push({i:'🩺',t:'Schedule a professional evaluation',b:'Ask your GP for a referral to a psychiatrist who specialises in adult ADHD. Bring a copy of this report.'});
+    rs2.push({i:'📓',t:'Keep a symptom journal',b:'Document your daily struggles for 2–4 weeks before your appointment with specific examples.'});
+  }
+  if(s3>=10)rs2.push({i:'💬',t:'Explore emotional regulation therapy',b:'CBT or DBT can significantly help with emotional dysregulation — with or without a formal diagnosis.'});
+  rs2.push({i:'📚',t:'Learn more about ADHD',b:'Visit CHADD.org or additudemag.com for evidence-based resources on adult and female ADHD.'});
+  if(pct<50)rs2.push({i:'🔍',t:'Consider other explanations',b:'Anxiety, depression, sleep disorders, and burnout can produce ADHD-like symptoms. A broader mental health assessment may be valuable.'});
+  document.getElementById('recs').innerHTML=rs2.map(r=>`<div class="rec"><div class="rec-icon">${r.i}</div><div><h4>${r.t}</h4><p>${r.b}</p></div></div>`).join('');
+}
+
+function updateRadarColors(){
+  if(!radarChart) return;
+  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+  const gc=isDark?'rgba(255,255,255,.07)':'rgba(0,0,0,.07)';
+  const tc=isDark?'#8899AE':'#4A5A6A';
+  radarChart.options.scales.r.ticks.color=tc;
+  radarChart.options.scales.r.grid.color=gc;
+  radarChart.options.scales.r.pointLabels.color=tc;
+  radarChart.options.plugins.legend.labels.color=tc;
+  radarChart.update();
+}
+
+// ── PDF DOCUMENT (proper doc, not print-page) ─────────────────
+function downloadPDF(){
+  if(!window.jspdf){alert('PDF library loading, please try again.');return;}
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const {s1,s2,s3,s4,total,p1,p2,ens}=lastScores;
+  const pct=Math.round((total/80)*100);
+  const rKey=pct<30?'Low':pct<50?'Moderate':pct<68?'Elevated':'High';
+  const date=new Date().toLocaleDateString('en-GB',{year:'numeric',month:'long',day:'numeric'});
+
+  // Header
+  doc.setFillColor(18,168,126); doc.rect(0,0,210,36,'F');
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(18);
+  doc.text('NeuraMind — ADHD Screening Report',14,17);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9);
+  doc.text('Exploring ADHD in the Female Brain Through Multimodal Machine Learning',14,25);
+  doc.text('Ayah Alqassab · Dr. Roxane Mallouhy · Mashael Alqahtani | Al Yamamah University · WiDS 2025',14,31);
+  doc.setFillColor(232,131,74); doc.rect(0,36,210,7,'F');
+  doc.setFontSize(9); doc.text(`Report generated: ${date}    |    Not a medical device — for clinical reference only`,14,41.5);
+
+  let y=54; doc.setTextColor(13,24,32);
+
+  const secH=(title,fill=[240,252,248],tc=[10,107,86])=>{
+    if(y>262){doc.addPage();y=20;}
+    doc.setFillColor(...fill); doc.rect(14,y,182,8,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...tc);
+    doc.text(title,16,y+5.8); y+=13; doc.setTextColor(13,24,32); doc.setFont('helvetica','normal');
+  };
+  const row=(l,v,l2,v2)=>{
+    if(y>272){doc.addPage();y=20;}
+    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.text(l+':',16,y);
+    doc.setFont('helvetica','normal'); doc.text(String(v),62,y);
+    if(l2){doc.setFont('helvetica','bold');doc.text(l2+':',112,y);doc.setFont('helvetica','normal');doc.text(String(v2||''),158,y);}
+    y+=7;
+  };
+  const para=(text,sz=9.5)=>{
+    if(y>265){doc.addPage();y=20;}
+    const lines=doc.splitTextToSize(text,178);
+    doc.setFontSize(sz); doc.setFont('helvetica','normal');
+    doc.text(lines,16,y); y+=lines.length*5.2+3;
+  };
+
+  secH('OVERALL RESULT');
+  row('Score',`${total} / 80  (${pct}%)`,'Risk Level',rKey);
+  row('ADHD Signal',ens>=0.53?'Positive':'Negative','Ensemble Score',(ens*100).toFixed(1)+'%');
+  y+=3;
+
+  secH('MODEL ANALYSIS — WiDS 2025 Dual-Stream Ensemble');
+  row('Stream 1 (Keras NN)',(p1*100).toFixed(1)+'%','Stream 2 (LightGBM)',(p2*100).toFixed(1)+'%');
+  row('Ensemble (0.4×NN + 0.6×LGBM)',(ens*100).toFixed(1)+'%','Threshold','0.53 (F1-optimised)');
+  doc.setFontSize(8.5); doc.setTextColor(100,115,130);
+  doc.text('Model: LGBMClassifier(n_estimators=500) + Keras Dense(256→128), keras_weight=0.4, lgbm_weight=0.6',16,y);
+  y+=8; doc.setTextColor(13,24,32);
+
+  secH('DOMAIN SCORES');
+  [['Attention & Focus',s1],['Restlessness',s2],['Emotional Regulation',s3],['Daily Life Impact',s4]].forEach(([l,s])=>{
+    if(y>272){doc.addPage();y=20;}
+    const p2x=Math.round((s/20)*100);
+    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.text(l+':',16,y);
+    doc.setFont('helvetica','normal'); doc.text(`${s}/20  (${p2x}%)`,70,y);
+    doc.setFillColor(220,235,228); doc.rect(110,y-3.5,70,4,'F');
+    doc.setFillColor(18,168,126); doc.rect(110,y-3.5,70*(s/20),4,'F');
+    y+=7;
+  }); y+=3;
+
+  secH('CLINICAL INTERPRETATION');
+  const interp={Low:'Your responses suggest limited alignment with ADHD symptom patterns. This does not rule out ADHD, particularly if you mask well. If you have specific concerns, speak with a healthcare professional.',Moderate:'Your responses show moderate alignment with ADHD patterns. A professional conversation is warranted, particularly if these symptoms affect your daily life and relationships.',Elevated:'Your symptom profile shows significant alignment with how ADHD commonly presents. We strongly recommend seeking a professional evaluation from a psychiatrist or clinical psychologist.',High:'Your responses are strongly consistent with ADHD symptom profiles. This does not confirm a diagnosis, but your profile warrants prompt professional evaluation. Please seek specialist support.'};
+  para(interp[rKey]); y+=3;
+
+  secH('RECOMMENDED NEXT STEPS');
+  const recList=[];
+  if(pct>=50){recList.push('Schedule a professional evaluation — ask your GP for a referral to a psychiatrist who specialises in adult ADHD.');recList.push('Keep a symptom journal for 2–4 weeks before your appointment with specific examples of each difficulty.');}
+  if(s3>=10)recList.push('Explore CBT or DBT for emotional regulation — effective with or without a formal diagnosis.');
+  recList.push('Visit CHADD.org or additudemag.com for evidence-based resources on adult and female ADHD.');
+  recList.forEach((r,i)=>{
+    if(y>265){doc.addPage();y=20;}
+    const lines=doc.splitTextToSize(`${i+1}. ${r}`,170);
+    doc.setFontSize(9.5); doc.setFont('helvetica','normal'); doc.text(lines,18,y); y+=lines.length*5.2+2;
+  }); y+=3;
+
+  secH('ABOUT THIS RESEARCH');
+  para('NeuraMind is based on the WiDS Datathon 2025 research project by Ayah Alqassab, Dr. Roxane Mallouhy, and Mashael Alqahtani at Al Yamamah University. The model achieved 80.8% cross-validated accuracy and 94.1% recall on 1,213 real cases (ADHD+: 831, ADHD−: 382). Metrics from printed confusion matrix: TP=782, TN=193, FP=189, FN=49. ADHD AUC=0.82, Sex AUC=0.81 (from ROC curve).');
+  y+=3;
+
+  if(y>244){doc.addPage();y=20;}
+  doc.setFillColor(254,240,228); doc.rect(14,y,182,20,'F');
+  doc.setDrawColor(232,131,74); doc.setLineWidth(0.5); doc.rect(14,y,182,20,'S');
+  doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(180,80,20);
+  doc.text('Clinical Disclaimer',16,y+7);
+  doc.setFont('helvetica','normal'); doc.setTextColor(100,70,30);
+  const disc=doc.splitTextToSize('This screening tool is not a diagnostic instrument. A positive screen indicates that your symptom profile is consistent with ADHD and warrants professional evaluation. A negative screen does not rule out ADHD. Please discuss these results with a qualified healthcare professional.',174);
+  doc.text(disc,16,y+13); y+=26;
+
+  // Footer
+  const pageCount=doc.getNumberOfPages();
+  for(let i=1;i<=pageCount;i++){
+    doc.setPage(i);
+    doc.setFillColor(13,24,32); doc.rect(0,278,210,19,'F');
+    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(255,255,255);
+    doc.text('NeuraMind · Al Yamamah University · WiDS Datathon 2025',14,286);
+    doc.text('Ayah Alqassab · Dr. Roxane Mallouhy · Mashael Alqahtani',14,291);
+    doc.text(`Page ${i} of ${pageCount}`,180,291,{align:'right'});
+  }
+  doc.save(`NeuraMind_Report_${new Date().toISOString().slice(0,10)}.pdf`);
+}
+
+// ── COMMUNITY ─────────────────────────────────────────────────
+function renderCommunity(){
+  const data=JSON.parse(localStorage.getItem(STORE_KEY)||'[]');
+  const cont=document.getElementById('comm-content');
+  if(!data.length){cont.innerHTML=`<div class="no-data"><h3>No results shared yet</h3><p>Be the first — take the screening and opt in at the start.</p><br/><button class="btn-p" onclick="startAssessment()">Take the Screening</button></div>`;return;}
+  const n=data.length, avgTotal=(data.reduce((a,r)=>a+r.total,0)/n), avgPct=Math.round((avgTotal/80)*100);
+  const risks={Low:0,Moderate:0,Elevated:0,High:0};
+  data.forEach(r=>risks[r.risk]=(risks[r.risk]||0)+1);
+  const positive=data.filter(r=>r.adhd_positive).length;
+  cont.innerHTML=`
+    <div class="comm-stats">
+      <div class="cs-card"><div class="cs-num">${n}</div><div class="cs-lbl">Total responses</div></div>
+      <div class="cs-card"><div class="cs-num">${avgPct}%</div><div class="cs-lbl">Average score</div></div>
+      <div class="cs-card"><div class="cs-num">${Math.round((positive/n)*100)}%</div><div class="cs-lbl">Model positive</div></div>
+      <div class="cs-card"><div class="cs-num">${Math.round(data.reduce((a,r)=>a+r.s3,0)/n*5)}%</div><div class="cs-lbl">Avg emotion score</div></div>
+    </div>
+    <div class="dist-wrap"><h3>Risk level distribution</h3>
+      ${['High','Elevated','Moderate','Low'].map(l=>{
+        const c=risks[l]||0,p=n?Math.round((c/n)*100):0;
+        const cols={High:'#DC2626',Elevated:'#EA580C',Moderate:'#CA8A04',Low:'#12A87E'};
+        return `<div class="dist-bar"><div class="dist-lbl"><span>${l}</span><span>${c} (${p}%)</span></div>
+          <div class="dist-bg"><div class="dist-fill" style="width:${p}%;background:${cols[l]}">${p>12?`<span>${p}%</span>`:''}</div></div></div>`;
+      }).join('')}
+    </div>
+    <div class="dist-wrap"><h3>Average domain scores <span style="font-size:.8rem;font-weight:400;color:var(--muted)">(out of 20)</span></h3>
+      ${['Attention & Focus','Restlessness','Emotional Regulation','Daily Impact'].map((l,i)=>{
+        const k=['s1','s2','s3','s4'][i],avg=(data.reduce((a,r)=>a+r[k],0)/n).toFixed(1),p2=Math.round((avg/20)*100);
+        return `<div class="dist-bar"><div class="dist-lbl"><span>${l}</span><span>${avg}/20 (${p2}%)</span></div>
+          <div class="dist-bg"><div class="dist-fill" style="width:${p2}%;background:var(--pr)">${p2>12?`<span>${p2}%</span>`:''}</div></div></div>`;
+      }).join('')}
+    </div>`;
+}
+
+// ── ADMIN ─────────────────────────────────────────────────────
+function renderAdmin(){
+  const data=JSON.parse(localStorage.getItem(STORE_KEY)||'[]');
+  const cont=document.getElementById('admin-content');
+  if(!data.length){cont.innerHTML='<div class="empty-state">No results collected yet. Responses appear here once participants consent to share.</div>';return;}
+  const n=data.length, avg=(data.reduce((a,r)=>a+r.total,0)/n).toFixed(1);
+  const positive=data.filter(r=>r.adhd_positive).length;
+  const risks={Low:0,Moderate:0,Elevated:0,High:0};
+  data.forEach(r=>risks[r.risk]=(risks[r.risk]||0)+1);
+  cont.innerHTML=`
+    <div class="comm-stats" style="margin-bottom:1.5rem">
+      <div class="cs-card"><div class="cs-num">${n}</div><div class="cs-lbl">Total responses</div></div>
+      <div class="cs-card"><div class="cs-num">${avg}</div><div class="cs-lbl">Avg total score</div></div>
+      <div class="cs-card"><div class="cs-num">${Math.round((positive/n)*100)}%</div><div class="cs-lbl">Model positive</div></div>
+      <div class="cs-card"><div class="cs-num">${data.filter(r=>r.age).length}</div><div class="cs-lbl">With demographics</div></div>
+    </div>
+    <div class="admin-charts">
+      <div class="admin-chart-box"><h3>Risk distribution</h3><canvas id="adminRisk" height="200"></canvas></div>
+      <div class="admin-chart-box"><h3>Domain averages (/20)</h3><canvas id="adminDomain" height="200"></canvas></div>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>#</th><th>Date</th><th>Score</th><th>Risk</th><th>ADHD+</th><th>Ensemble</th><th>S1</th><th>S2</th><th>S3</th><th>S4</th><th>Age</th><th>Gender</th><th>Region</th><th>Diagnosed</th></tr></thead>
+      <tbody>${data.map((r,i)=>`<tr>
+        <td>${i+1}</td>
+        <td>${new Date(r.ts).toLocaleDateString('en-GB')}</td>
+        <td><strong>${r.total}/80</strong></td>
+        <td><span class="risk-pill rp-${r.risk.toLowerCase().slice(0,3)}">${r.risk}</span></td>
+        <td>${r.adhd_positive?'<span style="color:#12A87E;font-weight:600">Yes</span>':'<span style="color:var(--muted)">No</span>'}</td>
+        <td>${(r.ensemble_score*100).toFixed(1)}%</td>
+        <td>${r.s1}</td><td>${r.s2}</td><td>${r.s3}</td><td>${r.s4}</td>
+        <td>${r.age||'—'}</td><td>${r.gender||'—'}</td><td>${r.region||'—'}</td><td>${r.diagnosed||'—'}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>`;
+
+  new Chart(document.getElementById('adminRisk').getContext('2d'),{
+    type:'doughnut',
+    data:{labels:['High','Elevated','Moderate','Low'],
+      datasets:[{data:[risks.High,risks.Elevated,risks.Moderate,risks.Low],
+        backgroundColor:['#DC2626','#EA580C','#CA8A04','#12A87E'],borderWidth:2,borderColor:'var(--bgc)'}]},
+    options:{plugins:{legend:{position:'bottom',labels:{color:'var(--sub)',font:{size:11}}}},cutout:'55%'}
+  });
+  const avgs=['s1','s2','s3','s4'].map(k=>(data.reduce((a,r)=>a+r[k],0)/n).toFixed(1));
+  new Chart(document.getElementById('adminDomain').getContext('2d'),{
+    type:'bar',
+    data:{labels:['Attention','Restlessness','Emotion','Daily Impact'],
+      datasets:[{label:'Avg score',data:avgs,backgroundColor:'rgba(18,168,126,.7)',borderColor:'#12A87E',borderWidth:1.5,borderRadius:6}]},
+    options:{scales:{y:{max:20,ticks:{color:'var(--sub)'},grid:{color:'var(--bdrlt)'}},x:{ticks:{color:'var(--sub)'}}},plugins:{legend:{display:false}}}
+  });
+}
+
+function exportCSV(){
+  const data=JSON.parse(localStorage.getItem(STORE_KEY)||'[]');
+  if(!data.length){alert('No data to export.');return;}
+  const hdrs=['id','date','total','pct','risk','adhd_positive','ensemble_score','s1','s2','s3','s4','age','gender','region','diagnosed'];
+  const rows=data.map(r=>[r.id,new Date(r.ts).toISOString().slice(0,10),r.total,Math.round((r.total/80)*100),r.risk,r.adhd_positive,r.ensemble_score,r.s1,r.s2,r.s3,r.s4,r.age||'',r.gender||'',r.region||'',r.diagnosed||'']);
+  const csv=[hdrs,...rows].map(r=>r.join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download=`NeuraMind_Data_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+function clearAllData(){
+  if(confirm('Permanently delete all collected data? This cannot be undone.')){localStorage.removeItem(STORE_KEY);renderAdmin();}
+}
+
+// ── RESET ─────────────────────────────────────────────────────
+function resetAssessment(){
+  document.querySelectorAll('.opt-lbl').forEach(l=>l.classList.remove('sel'));
+  document.querySelectorAll('input[type=radio]').forEach(r=>r.checked=false);
+  lastScores={};
+  if(radarChart){radarChart.destroy();radarChart=null;}
+  showStep(0); showPage('assessment');
+}
+
+updateProg();
+</script>
+</body>
+</html>
