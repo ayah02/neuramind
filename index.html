@@ -857,45 +857,39 @@ function runModel(s1,s2,s3,s4){
 // ── CLOUD DATA HELPERS ───────────────────────────────────────
 async function saveToCloud(entry){
   if(!CONFIGURED){
-    // Fallback: save to localStorage if not configured
     const local=JSON.parse(localStorage.getItem('nm_local_backup')||'[]');
     local.push(entry); localStorage.setItem('nm_local_backup',JSON.stringify(local));
     return;
   }
   try {
-    // Read current data
-    const getRes=await fetch(JSONBIN_URL+'/latest',{
-      headers:{'X-Master-Key':JSONBIN_KEY}
-    });
+    const getRes=await fetch(JSONBIN_URL+'/latest',{ headers:{'X-Master-Key':JSONBIN_KEY} });
+    if(!getRes.ok) throw new Error('Error Code ' + getRes.status);
     const getJson=await getRes.json();
     const current=Array.isArray(getJson.record)?getJson.record:[];
     current.push(entry);
-    // Write updated data
-    await fetch(JSONBIN_URL,{
+    
+    const putRes=await fetch(JSONBIN_URL,{
       method:'PUT',
       headers:{'Content-Type':'application/json','X-Master-Key':JSONBIN_KEY},
       body:JSON.stringify(current)
     });
+    if(!putRes.ok) throw new Error('Save Error ' + putRes.status);
   } catch(e){
-    // On error fallback to localStorage
+    alert('⚠️ Cloud Save Failed! ' + e.message + '\nCheck your JSONBIN keys.');
     const local=JSON.parse(localStorage.getItem('nm_local_backup')||'[]');
     local.push(entry); localStorage.setItem('nm_local_backup',JSON.stringify(local));
-    console.warn('Cloud save failed, saved locally:',e);
   }
 }
 
 async function loadFromCloud(){
-  if(!CONFIGURED){
-    return JSON.parse(localStorage.getItem('nm_local_backup')||'[]');
-  }
+  if(!CONFIGURED) return JSON.parse(localStorage.getItem('nm_local_backup')||'[]');
   try {
-    const res=await fetch(JSONBIN_URL+'/latest',{
-      headers:{'X-Master-Key':JSONBIN_KEY}
-    });
+    const res=await fetch(JSONBIN_URL+'/latest',{ headers:{'X-Master-Key':JSONBIN_KEY} });
+    if(!res.ok) throw new Error('Error Code ' + res.status);
     const json=await res.json();
     return Array.isArray(json.record)?json.record:[];
   } catch(e){
-    console.warn('Cloud load failed:',e);
+    alert('⚠️ Cloud Load Failed! ' + e.message + '\nCheck your JSONBIN keys.');
     return JSON.parse(localStorage.getItem('nm_local_backup')||'[]');
   }
 }
