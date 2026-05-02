@@ -865,7 +865,11 @@ async function saveToCloud(entry){
     const getRes=await fetch(JSONBIN_URL+'/latest',{ headers:{'X-Master-Key':JSONBIN_KEY} });
     if(!getRes.ok) throw new Error('Error Code ' + getRes.status);
     const getJson=await getRes.json();
-    const current=Array.isArray(getJson.record)?getJson.record:[];
+    let current=Array.isArray(getJson.record)?getJson.record:[];
+    
+    // MAGIC FIX: Automatically delete the fake {} before saving new data!
+    current = current.filter(item => item.id !== undefined);
+    
     current.push(entry);
     
     const putRes=await fetch(JSONBIN_URL,{
@@ -887,7 +891,11 @@ async function loadFromCloud(){
     const res=await fetch(JSONBIN_URL+'/latest',{ headers:{'X-Master-Key':JSONBIN_KEY} });
     if(!res.ok) throw new Error('Error Code ' + res.status);
     const json=await res.json();
-    return Array.isArray(json.record)?json.record:[];
+    let rawData = Array.isArray(json.record)?json.record:[];
+    
+    // MAGIC FIX: Hide the fake {} from the Admin dashboard so it doesn't crash!
+    return rawData.filter(item => item.id !== undefined);
+    
   } catch(e){
     alert('⚠️ Cloud Load Failed! ' + e.message + '\nCheck your JSONBIN keys.');
     return JSON.parse(localStorage.getItem('nm_local_backup')||'[]');
