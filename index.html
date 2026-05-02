@@ -369,6 +369,9 @@ footer{background:var(--bgc);border-top:1px solid var(--bdr);padding:2.5rem clam
     <button class="theme-btn" onclick="toggleTheme()" title="Toggle dark/light mode"></button>
     <button class="nav-cta" onclick="startAssessment()">Take Screening</button>
     <button class="burger" onclick="toggleMobileNav()" aria-label="Menu"><span></span><span></span><span></span></button>
+    <button id="langToggle" class="btn-outline" onclick="switchLanguage()" style="margin-right: 15px; cursor: pointer; padding: 6px 12px; border-radius: 20px;">
+  عربي
+</button>
   </div>
 </nav>
 <div class="mobile-nav" id="mobile-nav">
@@ -674,6 +677,8 @@ footer{background:var(--bgc);border-top:1px solid var(--bdr);padding:2.5rem clam
 
 <script>
 const ADMIN_PW  = 'neuramind2025';
+// PASTE THE LANGUAGE LOGIC HERE:
+    let currentLang = 'en';
 // ── CLOUD STORAGE CONFIG (JSONBin.io — free) ──────────────────
 // Sign up free at jsonbin.io → API Keys → Create Key
 // Then create a Bin with [] as initial content
@@ -786,6 +791,22 @@ function checkAdmin(){
     document.getElementById('admin-overlay').classList.add('hidden');
     showPage('admin');
   } else { document.getElementById('admin-err').style.display='block'; }
+}
+
+  let currentLang = 'en';
+
+function switchLanguage() {
+  currentLang = currentLang === 'en' ? 'ar' : 'en';
+  
+  // Change the direction of the website (RTL for Arabic, LTR for English)
+  document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+  document.documentElement.lang = currentLang;
+  
+  // Change the button text
+  document.getElementById('langToggle').innerText = currentLang === 'ar' ? 'English' : 'عربي';
+  
+  // If you have a specific function that translates your text, call it here!
+  // Example: applyTranslations(currentLang);
 }
 
 // ── BUILD QUESTIONS ───────────────────────────────────────────
@@ -901,6 +922,7 @@ async function loadFromCloud(){
     return JSON.parse(localStorage.getItem('nm_local_backup')||'[]');
   }
 }
+  
 
 // ── SUBMIT ────────────────────────────────────────────────────
 function submitAssessment(){
