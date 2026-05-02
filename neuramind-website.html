@@ -1006,9 +1006,9 @@ function downloadPDF(){
 
   secH('MODEL ANALYSIS — WiDS 2025 Dual-Stream Ensemble');
   row('Stream 1 (Keras NN)',(p1*100).toFixed(1)+'%','Stream 2 (LightGBM)',(p2*100).toFixed(1)+'%');
-  row('Ensemble (0.4×NN + 0.6×LGBM)',(ens*100).toFixed(1)+'%','Threshold','0.53 (F1-optimised)');
+  row('Ensemble Score',(ens*100).toFixed(1)+'%','Threshold','0.53 (F1-optimised)');
   doc.setFontSize(8.5); doc.setTextColor(100,115,130);
-  doc.text('Model: LGBMClassifier(n_estimators=500) + Keras Dense(256→128), keras_weight=0.4, lgbm_weight=0.6',16,y);
+  doc.text('Model: LGBMClassifier(n_estimators=500) + Keras Dense(256->128), keras_weight=0.4, lgbm_weight=0.6',16,y);
   y+=8; doc.setTextColor(13,24,32);
 
   secH('DOMAIN SCORES');
@@ -1174,3 +1174,4 @@ updateProg();
 </script>
 </body>
 </html>
+
