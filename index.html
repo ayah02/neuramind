@@ -1229,14 +1229,31 @@ function exportCSV(){
   }); // end loadFromCloud
 }
 
-function clearAllData(){
+async function clearAllData(){
   if(!confirm('Permanently delete ALL collected data from the cloud? This cannot be undone.')) return;
-  if(!CONFIGURED){localStorage.removeItem('nm_local_backup');renderAdmin();return;}
-  fetch(JSONBIN_URL,{method:'PUT',
-    headers:{'Content-Type':'application/json','X-Master-Key':JSONBIN_KEY},
-    body:'[]'})
-  .then(()=>renderAdmin())
-  .catch(e=>{alert('Error clearing data: '+e.message);});
+  
+  if(!CONFIGURED){
+    localStorage.removeItem('nm_local_backup');
+    renderAdmin();
+    return;
+  }
+  
+  try {
+    const res = await fetch(JSONBIN_URL, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_KEY },
+      // MAGIC FIX: Send the fake object so JSONBin accepts the clear command!
+      body: JSON.stringify([{}]) 
+    });
+    
+    if(!res.ok) throw new Error('Error Code ' + res.status);
+    
+    // Refresh the dashboard to show it is empty
+    renderAdmin(); 
+    
+  } catch(e) {
+    alert('⚠️ Cloud Clear Failed! ' + e.message);
+  }
 }
 
 // ── RESET ─────────────────────────────────────────────────────
